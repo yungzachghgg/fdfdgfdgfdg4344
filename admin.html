@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - LuckBlox</title>
+    <link rel="icon" href="wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0d;
+            min-height: 100vh;
+            color: #fff;
+        }
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #dc2626;
+        }
+        .logo img { height: 36px; }
+        .admin-badge {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .panel {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+        .panel-header {
+            background: rgba(0,0,0,0.3);
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-title {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .panel-count {
+            background: #dc2626;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .panel-content {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .report-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .report-item.resolved {
+            opacity: 0.6;
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .report-users {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-tag {
+            display: flex;
+            flex-direction: column;
+        }
+        .user-label {
+            font-size: 11px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+        }
+        .user-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .reported-user {
+            color: #ef4444;
+        }
+        .reporter-user {
+            color: #3b82f6;
+        }
+        .report-arrow {
+            font-size: 20px;
+            color: #8b9dc3;
+        }
+        .report-time {
+            font-size: 12px;
+            color: #8b9dc3;
+        }
+        .report-reason {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid #ef4444;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .report-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .btn-ban {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+        }
+        .btn-ban:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+        }
+        .btn-dismiss {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .btn-dismiss:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .btn-unban {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        .status-resolved {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        .banned-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .banned-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .banned-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #ef4444;
+        }
+        .banned-reason {
+            font-size: 13px;
+            color: #8b9dc3;
+            margin-top: 4px;
+        }
+        .banned-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8b9dc3;
+        }
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 0 20px;
+            background: rgba(0,0,0,0.3);
+        }
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #8b9dc3;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            color: #fff;
+            border-bottom-color: #dc2626;
+        }
+        .tab:hover {
+            color: #fff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .give-robux-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .give-robux-form input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        .give-robux-form input::placeholder {
+            color: #64748b;
+        }
+        .btn-give {
+            background: linear-gradient(135deg, #F9C337 0%, #F68F21 100%);
+            color: #0d0d0d;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-give:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(249, 195, 55, 0.4);
+        }
+        .user-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .user-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .user-robux {
+            font-size: 13px;
+            color: #F9C337;
+            margin-top: 4px;
+        }
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .log-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .log-content {
+            flex: 1;
+        }
+        .log-action {
+            font-weight: 600;
+            color: #fff;
+        }
+        .log-details {
+            color: #8b9dc3;
+            margin-top: 4px;
+        }
+        .log-time {
+            font-size: 11px;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+        .log-give { border-left: 3px solid #F9C337; }
+        .log-ban { border-left: 3px solid #dc2626; }
+        .log-unban { border-left: 3px solid #22c55e; }
+        .log-dismiss { border-left: 3px solid #3b82f6; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="dashboard.html" class="logo">
+            <img src="XwOME.jpg" alt="LuckBlox" style="height: 36px;">
+        </a>
+        <div class="admin-badge">🛡️ Admin Panel</div>
+        <a href="dashboard.html" class="back-btn">← Dashboard</a>
+    </header>
+
+    <div class="container">
+        <div class="admin-grid">
+            <!-- Reports Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        🚨 Reports
+                        <span class="panel-count" id="report-count">0</span>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('pending')">Pending</button>
+                    <button class="tab" onclick="showTab('resolved')">Resolved</button>
+                </div>
+                <div class="panel-content">
+                    <div id="pending-reports" class="tab-content active">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div>No pending reports</div>
+                        </div>
+                    </div>
+                    <div id="resolved-reports" class="tab-content">
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <div>No resolved reports</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banned Users Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        🚫 Banned Users
+                        <span class="panel-count" id="ban-count">0</span>
+                    </div>
+                </div>
+                <div class="panel-content" id="banned-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎉</div>
+                        <div>No banned users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Give R$ Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        💰 Give R$
+                        <span class="panel-count">ADMIN</span>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="give-robux-form">
+                        <input type="text" id="give-username" placeholder="Username" style="flex: 1.5;">
+                        <input type="number" id="give-amount" placeholder="Amount" min="1" style="flex: 1;">
+                        <button class="btn btn-give" onclick="giveRobux()">Give R$</button>
+                    </div>
+                    <div id="user-list" style="max-height: 400px; overflow-y: auto;">
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <div>Loading users...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Logs Panel -->
+            <div class="panel" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📋 Admin Logs
+                        <span class="panel-count" id="log-count">0</span>
+                    </div>
+                    <button class="btn btn-dismiss" onclick="clearLogs()">Clear Logs</button>
+                </div>
+                <div class="panel-content" id="admin-logs" style="max-height: 300px; overflow-y: auto;">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div>No admin activity yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Check admin access
+        Auth.requireAuth();
+        Auth.requireAdmin();
+
+        const currentAdmin = Auth.getCurrentUser().username;
+        const API_URL = window.location.origin;
+
+        async function loadReports() {
+            try {
+                const response = await fetch(`${API_URL}/api/reports`);
+                const reports = await response.json();
+                
+                const pending = reports.filter(r => r.status === 'pending');
+                const resolved = reports.filter(r => r.status === 'resolved');
+
+                document.getElementById('report-count').textContent = pending.length;
+
+                // Pending reports
+                const pendingContainer = document.getElementById('pending-reports');
+                if (pending.length === 0) {
+                    pendingContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div>No pending reports</div>
+                        </div>
+                    `;
+                } else {
+                    pendingContainer.innerHTML = pending.map(report => `
+                        <div class="report-item" data-id="${report.id}">
+                            <div class="report-header">
+                                <div class="report-users">
+                                    <div class="user-tag">
+                                        <span class="user-label">Reported</span>
+                                        <span class="user-name reported-user">${report.reportedUser}</span>
+                                    </div>
+                                    <span class="report-arrow">→</span>
+                                    <div class="user-tag">
+                                        <span class="user-label">Reporter</span>
+                                        <span class="user-name reporter-user">${report.reporter}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-pending">Pending</span>
+                                    <div class="report-time">${formatTime(report.timestamp)}</div>
+                                </div>
+                            </div>
+                            <div class="report-reason">
+                                <strong>Reason:</strong> ${report.reason}
+                            </div>
+                            <div class="report-actions">
+                                <button class="btn btn-ban" onclick="banUser(${report.id}, '${report.reportedUser}')">
+                                    🚫 Ban User
+                                </button>
+                                <button class="btn btn-dismiss" onclick="dismissReport(${report.id})">
+                                    ✓ Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Resolved reports
+                const resolvedContainer = document.getElementById('resolved-reports');
+                if (resolved.length === 0) {
+                    resolvedContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <div>No resolved reports</div>
+                        </div>
+                    `;
+                } else {
+                    resolvedContainer.innerHTML = resolved.map(report => `
+                        <div class="report-item resolved" data-id="${report.id}">
+                            <div class="report-header">
+                                <div class="report-users">
+                                    <div class="user-tag">
+                                        <span class="user-label">Reported</span>
+                                        <span class="user-name reported-user">${report.reportedUser}</span>
+                                    </div>
+                                    <span class="report-arrow">→</span>
+                                    <div class="user-tag">
+                                        <span class="user-label">Reporter</span>
+                                        <span class="user-name reporter-user">${report.reporter}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-resolved">${report.action || 'Dismissed'}</span>
+                                    <div class="report-time">${formatTime(report.handledAt || report.timestamp)}</div>
+                                </div>
+                            </div>
+                            <div class="report-reason">
+                                <strong>Reason:</strong> ${report.reason}
+                            </div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 10px;">
+                                Handled by: ${report.handledBy}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load reports:', err);
+            }
+        }
+
+        async function loadBannedUsers() {
+            try {
+                const response = await fetch(`${API_URL}/api/bans`);
+                const banned = await response.json();
+                
+                document.getElementById('ban-count').textContent = banned.length;
+
+                const container = document.getElementById('banned-list');
+                if (banned.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🎉</div>
+                            <div>No banned users</div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = banned.map(user => `
+                        <div class="banned-user-item">
+                            <div class="banned-info">
+                                <span class="banned-name">${user.username}</span>
+                                <span class="banned-reason">${user.reason || 'No reason given'}</span>
+                                <span class="banned-meta">Banned by ${user.bannedBy} • ${formatTime(user.timestamp)}</span>
+                            </div>
+                            <button class="btn btn-unban" onclick="unbanUser('${user.username}')">
+                                ✓ Unban
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load bans:', err);
+            }
+        }
+
+        async function banUser(reportId, username) {
+            if (!confirm(`Are you sure you want to BAN ${username}?`)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/reports/${reportId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'ban', adminUsername: currentAdmin })
+                });
+                
+                if (response.ok) {
+                    alert(`${username} has been banned.`);
+                    addLog('ban', `Banned ${username}`, `Report ID: ${reportId}`);
+                    loadReports();
+                    loadBannedUsers();
+                }
+            } catch (err) {
+                alert('Failed to ban user');
+            }
+        }
+
+        async function dismissReport(reportId) {
+            try {
+                await fetch(`${API_URL}/api/reports/${reportId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'dismiss', adminUsername: currentAdmin })
+                });
+                addLog('dismiss', `Dismissed Report #${reportId}`, 'Report dismissed without action');
+                loadReports();
+            } catch (err) {
+                alert('Failed to dismiss report');
+            }
+        }
+
+        async function unbanUser(username) {
+            if (!confirm(`Are you sure you want to UNBAN ${username}?`)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/bans/${username}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert(`${username} has been unbanned.`);
+                    addLog('unban', `Unbanned ${username}`, 'User ban removed');
+                    loadBannedUsers();
+                }
+            } catch (err) {
+                alert('Failed to unban user');
+            }
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-reports').classList.add('active');
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+            return date.toLocaleDateString();
+        }
+
+        // Admin Logging System
+        const ADMIN_LOGS_KEY = 'admin_logs';
+        
+        function addLog(type, action, details) {
+            const logs = JSON.parse(localStorage.getItem(ADMIN_LOGS_KEY) || '[]');
+            const log = {
+                id: Date.now(),
+                type,
+                action,
+                details,
+                admin: currentAdmin,
+                timestamp: new Date().toISOString()
+            };
+            logs.unshift(log);
+            // Keep only last 100 logs
+            if (logs.length > 100) logs.pop();
+            localStorage.setItem(ADMIN_LOGS_KEY, JSON.stringify(logs));
+            displayLogs();
+        }
+        
+        function displayLogs() {
+            const logs = JSON.parse(localStorage.getItem(ADMIN_LOGS_KEY) || '[]');
+            document.getElementById('log-count').textContent = logs.length;
+            
+            const container = document.getElementById('admin-logs');
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div>No admin activity yet</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const icons = {
+                give: '💰',
+                ban: '🚫',
+                unban: '✅',
+                dismiss: '📭'
+            };
+            
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry log-${log.type}">
+                    <span class="log-icon">${icons[log.type] || '📝'}</span>
+                    <div class="log-content">
+                        <div class="log-action">${log.action}</div>
+                        <div class="log-details">${log.details}</div>
+                    </div>
+                    <span class="log-time">${formatTime(log.timestamp)}</span>
+                </div>
+            `).join('');
+        }
+        
+        function clearLogs() {
+            if (confirm('Clear all admin logs?')) {
+                localStorage.removeItem(ADMIN_LOGS_KEY);
+                displayLogs();
+            }
+        }
+
+        // Load data
+        loadReports();
+        loadBannedUsers();
+        displayLogs();
+
+        // Refresh every 3 seconds
+        setInterval(() => {
+            loadReports();
+            loadBannedUsers();
+        }, 3000);
+
+        // Load all users for Give R$ panel
+        function loadUsers() {
+            const users = Auth.getUsers();
+            const userList = document.getElementById('user-list');
+            
+            if (Object.keys(users).length === 0) {
+                userList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👤</div>
+                        <div>No users found</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            userList.innerHTML = Object.values(users).map(user => `
+                <div class="user-list-item">
+                    <div class="user-info">
+                        <span class="user-name">${user.username} ${user.isAdmin ? '(Admin)' : ''}</span>
+                        <span class="user-robux">💰 ${user.robux?.toLocaleString() || 0} R$</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-give btn-small" onclick="quickGive('${user.username}')">+100</button>
+                        <button class="btn btn-give btn-small" onclick="quickGive('${user.username}', 1000)">+1K</button>
+                        <button class="btn btn-give btn-small" onclick="quickGive('${user.username}', 10000)">+10K</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Give R$ to specific user
+        async function giveRobux() {
+            const username = document.getElementById('give-username').value.trim();
+            const amount = parseInt(document.getElementById('give-amount').value);
+            
+            if (!username || !amount || amount <= 0) {
+                alert('Please enter a valid username and amount');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/give-robux`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        amount,
+                        adminUsername: currentAdmin
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(`✅ Gave ${amount.toLocaleString()} R$ to ${username}`);
+                    addLog('give', `Gave ${amount.toLocaleString()} R$`, `Recipient: ${username} | New Balance: ${result.newBalance?.toLocaleString()}`);
+                    document.getElementById('give-username').value = '';
+                    document.getElementById('give-amount').value = '';
+                    loadUsers(); // Refresh user list
+                } else {
+                    alert('❌ Failed: ' + (result.error || result.message || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
+                console.error('Give R$ error:', err);
+            }
+        }
+
+        // Quick give buttons
+        async function quickGive(username, amount = 100) {
+            document.getElementById('give-username').value = username;
+            document.getElementById('give-amount').value = amount;
+            giveRobux();
+        }
+
+        // Load users on page load
+        loadUsers();
+        // Refresh users every 5 seconds
+        setInterval(loadUsers, 5000);
+    </script>
+</body>
+</html>
