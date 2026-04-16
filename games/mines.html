@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mines - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        
+        .logo img {
+            height: 40px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .game-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+        }
+        
+        @media (max-width: 900px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .control-panel {
+            background: #192040;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+        }
+        
+        .control-panel h2 {
+            color: #F9C337;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b2b2be;
+            font-size: 14px;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            background: #11173a;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .bet-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .bet-btn:disabled {
+            background: #39416d;
+            color: #8d8d9f;
+            cursor: not-allowed;
+        }
+        
+        .game-board {
+            background: #192040;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .multiplier {
+            font-size: 24px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #39416d 0%, #2d3561 100%);
+            border: 2px solid #4a5280;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .cell:hover:not(.revealed):not(.disabled) {
+            border-color: #F9C337;
+            transform: scale(1.05);
+        }
+        
+        .cell.revealed {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d1f33 100%);
+            border-color: #4fd1ff;
+            cursor: default;
+            box-shadow: 0 0 20px rgba(79, 209, 255, 0.4), inset 0 0 20px rgba(79, 209, 255, 0.1);
+        }
+        
+        .cell.mine {
+            background: linear-gradient(135deg, #5c1e1e 0%, #3a0d0d 100%);
+            border-color: #ff4444;
+            cursor: default;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.4), inset 0 0 20px rgba(255, 68, 68, 0.1);
+        }
+        
+        /* Bold Diamond Icon */
+        .diamond-icon {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .diamond-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 8px rgba(0,150,255,0.5));
+        }
+        
+        /* Bold Bomb Icon */
+        .bomb-icon {
+            width: 38px;
+            height: 38px;
+        }
+        
+        .bomb-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 8px rgba(255,0,0,0.5));
+        }
+        
+        .cell.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .cell.cashout {
+            background: linear-gradient(135deg, #F9C337 0%, #f68f21 100%);
+            border-color: #F9C337;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .message.win {
+            background: rgba(56, 192, 0, 0.2);
+            color: #38c000;
+            border: 1px solid #38c000;
+        }
+        
+        .message.lose {
+            background: rgba(207, 46, 46, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #cf2e2e;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #39416d;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #8d8d9f;
+        }
+        
+        .cashout-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #38c000 0%, #2da300 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back to Games</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="control-panel">
+            <h2>Mines</h2>
+            <div class="input-group">
+                <label>Bet Amount (R$)</label>
+                <input type="number" id="bet-amount" min="1" value="10">
+            </div>
+            <div class="input-group">
+                <label>Number of Mines</label>
+                <select id="mine-count">
+                    <option value="1">1 Mine</option>
+                    <option value="3" selected>3 Mines</option>
+                    <option value="5">5 Mines</option>
+                    <option value="10">10 Mines</option>
+                    <option value="15">15 Mines</option>
+                    <option value="20">20 Mines</option>
+                </select>
+            </div>
+            <button class="bet-btn" id="bet-btn" onclick="startGame()">Place Bet</button>
+            <button class="cashout-btn" id="cashout-btn" onclick="cashout()" style="display: none;">Cash Out</button>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="current-multiplier">1.00x</div>
+                    <div class="stat-label">Multiplier</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="current-win" style="color: #38c000;">0 R$</div>
+                    <div class="stat-label">Current Win</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="potential-win">0</div>
+                    <div class="stat-label">Next Click</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-board">
+            <div class="game-header">
+                <h3 style="color: #F9C337;">Find the Gems, Avoid the Mines!</h3>
+                <div class="multiplier" id="display-multiplier">1.00x</div>
+            </div>
+            <div class="grid" id="game-grid">
+                <!-- Grid cells will be generated by JavaScript -->
+            </div>
+            <div id="game-message"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        // Connect to socket for win announcements
+        const socket = io(window.location.origin, {
+            transports: ['websocket', 'polling']
+        });
+        Auth.requireAuth();
+        
+        let gameState = {
+            active: false,
+            bet: 0,
+            mines: [],
+            revealed: [],
+            mineCount: 3,
+            multiplier: 1.0
+        };
+
+        // Initialize grid
+        function initGrid() {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.onclick = () => cellClick(i);
+                grid.appendChild(cell);
+            }
+        }
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function startGame() {
+            const bet = parseInt(document.getElementById('bet-amount').value);
+            const mineCount = parseInt(document.getElementById('mine-count').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1) {
+                showMessage('Minimum bet is 1 R$', 'lose');
+                return;
+            }
+            
+            if (bet > user.robux) {
+                showMessage('Insufficient balance', 'lose');
+                return;
+            }
+            
+            // Deduct bet
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            // Initialize game state
+            gameState = {
+                active: true,
+                bet: bet,
+                mines: [],
+                revealed: [],
+                mineCount: mineCount,
+                multiplier: 1.0
+            };
+            
+            // Place mines randomly
+            const allPositions = Array.from({length: 25}, (_, i) => i);
+            for (let i = 0; i < mineCount; i++) {
+                const randomIndex = Math.floor(Math.random() * allPositions.length);
+                gameState.mines.push(allPositions.splice(randomIndex, 1)[0]);
+            }
+            
+            // Reset grid
+            initGrid();
+            updateMultiplier();
+            showMessage('');
+            
+            document.getElementById('bet-btn').style.display = 'none';
+            document.getElementById('cashout-btn').style.display = 'block';
+        }
+
+        function cellClick(index) {
+            if (!gameState.active || gameState.revealed.includes(index)) return;
+            
+            const cells = document.querySelectorAll('.cell');
+            const cell = cells[index];
+            
+            // Play click sound
+            playClickSound();
+            
+            if (gameState.mines.includes(index)) {
+                // Hit a mine - game over
+                cell.classList.add('mine');
+                cell.innerHTML = `<div class="bomb-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="13" r="8" fill="#222" stroke="#ff4444" stroke-width="2"/>
+                        <path d="M12 5V2" stroke="#ff8800" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="12" cy="2" r="2" fill="#ffaa00"/>
+                    </svg>
+                </div>`;
+                playExplosionSound();
+                revealAllMines();
+                gameOver(false);
+            } else {
+                // Safe tile
+                cell.classList.add('revealed');
+                cell.innerHTML = `<div class="diamond-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L4 9l8 13 8-13-8-7z" fill="#00d4ff" stroke="#80e8ff" stroke-width="2"/>
+                        <path d="M12 2L7 9h10L12 2z" fill="#80e8ff"/>
+                    </svg>
+                </div>`;
+                playGemSound();
+                gameState.revealed.push(index);
+                calculateMultiplier();
+                updateMultiplier();
+                
+                // Check if all safe tiles revealed
+                if (gameState.revealed.length === 25 - gameState.mineCount) {
+                    cashout();
+                }
+            }
+        }
+
+        function calculateMultiplier() {
+            const safeTiles = 25 - gameState.mineCount;
+            const revealed = gameState.revealed.length;
+            
+            // Calculate multiplier based on mines and revealed tiles
+            // Higher risk (more mines) = much higher multiplier
+            // Formula: Each mine adds exponential risk = exponential reward
+            const mineBonus = Math.pow(1.15, gameState.mineCount); // 1.15^mines
+            const progressBonus = 1 + (revealed / safeTiles) * 2; // Up to 3x for full clear
+            gameState.multiplier = mineBonus * progressBonus;
+        }
+
+        function updateMultiplier() {
+            const mult = gameState.multiplier.toFixed(2);
+            const currentWin = Math.floor(gameState.bet * gameState.multiplier);
+            const nextWin = Math.floor(gameState.bet * gameState.multiplier * 1.15);
+            document.getElementById('current-multiplier').textContent = mult + 'x';
+            document.getElementById('display-multiplier').textContent = mult + 'x';
+            document.getElementById('current-win').textContent = currentWin + ' R$';
+            document.getElementById('potential-win').textContent = '+' + (nextWin - currentWin) + ' R$';
+        }
+
+        function revealAllMines() {
+            const cells = document.querySelectorAll('.cell');
+            gameState.mines.forEach(index => {
+                if (!gameState.revealed.includes(index)) {
+                    cells[index].classList.add('mine');
+                    cells[index].innerHTML = `<div class="bomb-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="13" r="8" fill="#222" stroke="#ff4444" stroke-width="2"/>
+                            <path d="M12 5V2" stroke="#ff8800" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="12" cy="2" r="2" fill="#ffaa00"/>
+                        </svg>
+                    </div>`;
+                }
+            });
+        }
+
+        // Sound effects using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playClickSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 800;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+        
+        function playGemSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 1200;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.2);
+            
+            // Add a higher pitch sparkle
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.value = 1800;
+                osc2.type = 'sine';
+                gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc2.start(audioCtx.currentTime);
+                osc2.stop(audioCtx.currentTime + 0.15);
+            }, 50);
+        }
+        
+        function playExplosionSound() {
+            // Create noise buffer for explosion
+            const bufferSize = audioCtx.sampleRate * 0.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+            }
+            
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 200;
+            
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start(audioCtx.currentTime);
+        }
+
+        function cashout() {
+            if (!gameState.active) return;
+            
+            // Get fresh user data before calculating win
+            const user = Auth.getCurrentUser();
+            const winAmount = Math.floor(gameState.bet * gameState.multiplier);
+            Auth.updateRobux(user.robux + winAmount);
+            updateBalance();
+            
+            gameOver(true);
+        }
+
+        function gameOver(won) {
+            gameState.active = false;
+            
+            // Reveal all mines at end of game
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => cell.classList.add('disabled'));
+            
+            if (won) {
+                const winAmount = Math.floor(gameState.bet * gameState.multiplier);
+                showMessage(`You won ${winAmount} R$! (${gameState.multiplier.toFixed(2)}x)`, 'win');
+                // Broadcast win to chat
+                const user = Auth.getCurrentUser();
+                socket.emit('win', {
+                    username: user.username,
+                    game: 'Mines',
+                    amount: winAmount,
+                    multiplier: gameState.multiplier.toFixed(2) + 'x',
+                    timestamp: new Date().toISOString()
+                });
+            } else {
+                showMessage(`Boom! You lost ${gameState.bet} R$`, 'lose');
+            }
+            
+            document.getElementById('bet-btn').style.display = 'block';
+            document.getElementById('bet-btn').textContent = 'Play Again';
+            document.getElementById('cashout-btn').style.display = 'none';
+        }
+
+        function showMessage(text, type = '') {
+            const msgDiv = document.getElementById('game-message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        // Initialize
+        initGrid();
+        updateBalance();
+    </script>
+</body>
+</html>
