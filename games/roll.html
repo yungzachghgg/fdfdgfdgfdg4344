@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roll - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .game-board {
+            background: #192040;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+            text-align: center;
+        }
+        .game-board h2 {
+            color: #F9C337;
+            margin-bottom: 10px;
+        }
+        .subtitle { color: #b2b2be; margin-bottom: 30px; }
+        .control-panel {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 5px; text-align: left; }
+        .input-group label { color: #b2b2be; font-size: 14px; }
+        .input-group input, .input-group select {
+            padding: 12px;
+            background: #11173a;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .roll-btn {
+            padding: 15px 40px;
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .roll-btn:hover:not(:disabled) { transform: scale(1.05); }
+        .roll-btn:disabled { background: #39416d; color: #8d8d9f; cursor: not-allowed; }
+        .wheel-container {
+            margin: 40px 0;
+            position: relative;
+        }
+        .wheel {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: conic-gradient(
+                #cf2e2e 0deg 45deg,
+                #F9C337 45deg 90deg,
+                #38c000 90deg 135deg,
+                #F9C337 135deg 180deg,
+                #cf2e2e 180deg 225deg,
+                #F9C337 225deg 270deg,
+                #38c000 270deg 315deg,
+                #F9C337 315deg 360deg
+            );
+            position: relative;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            box-shadow: 0 0 50px rgba(249, 195, 55, 0.3);
+        }
+        .wheel::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #192040;
+            border-radius: 50%;
+            border: 4px solid #F9C337;
+        }
+        .wheel::after {
+            content: '🎲';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+        }
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #F9C337;
+            z-index: 10;
+        }
+        .result-display {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+        .result-display.win { color: #38c000; }
+        .result-display.lose { color: #ff6b6b; }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        .message {
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .message.win { background: rgba(56, 192, 0, 0.2); color: #38c000; }
+        .message.lose { background: rgba(207, 46, 46, 0.2); color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <h2>Roll</h2>
+            <p class="subtitle">Bet on Red, Yellow, or Green!</p>
+            
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Bet Amount (R$)</label>
+                    <input type="number" id="bet-amount" min="1" value="10">
+                </div>
+                <div class="input-group">
+                    <label>Bet On</label>
+                    <select id="bet-color">
+                        <option value="red">Red (2x)</option>
+                        <option value="yellow">Yellow (3x)</option>
+                        <option value="green">Green (5x)</option>
+                    </select>
+                </div>
+                <button class="roll-btn" id="roll-btn" onclick="roll()">Roll!</button>
+            </div>
+
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
+
+            <div class="result-display" id="result"></div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-box" style="background: #cf2e2e;"></div>
+                    <span>Red (45%) - 2x</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background: #F9C337;"></div>
+                    <span>Yellow (45%) - 3x</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background: #38c000;"></div>
+                    <span>Green (10%) - 5x</span>
+                </div>
+            </div>
+
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        let isRolling = false;
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function roll() {
+            if (isRolling) return;
+            
+            const bet = parseInt(document.getElementById('bet-amount').value);
+            const betColorSelect = document.getElementById('bet-color');
+            const betColor = betColorSelect.value;
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', 'lose');
+                return;
+            }
+            
+            // Deduct bet first
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            isRolling = true;
+            document.getElementById('roll-btn').disabled = true;
+            document.getElementById('result').textContent = '';
+            document.getElementById('message').textContent = '';
+            
+            // Determine result with fair odds
+            const roll = Math.random();
+            let resultColor, multiplier, rotation;
+            
+            // Adjusted odds: Red 45%, Yellow 45%, Green 10%
+            if (roll < 0.45) {
+                resultColor = 'red';
+                multiplier = 2;
+                rotation = Math.random() < 0.5 ? Math.random() * 45 : 180 + Math.random() * 45;
+            } else if (roll < 0.90) {
+                resultColor = 'yellow';
+                multiplier = 3;
+                const yellowSections = [45, 135, 225, 315];
+                rotation = yellowSections[Math.floor(Math.random() * 4)] + Math.random() * 45;
+            } else {
+                resultColor = 'green';
+                multiplier = 5;
+                rotation = Math.random() < 0.5 ? 90 + Math.random() * 45 : 270 + Math.random() * 45;
+            }
+            
+            // Spin wheel
+            const wheel = document.getElementById('wheel');
+            const totalRotation = 360 * 5 + (360 - rotation);
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            setTimeout(() => {
+                isRolling = false;
+                document.getElementById('roll-btn').disabled = false;
+                
+                const resultDiv = document.getElementById('result');
+                const colorNames = { red: '🔴 RED', yellow: '🟡 YELLOW', green: '🟢 GREEN' };
+                resultDiv.textContent = colorNames[resultColor];
+                
+                // Check win condition properly
+                const won = betColor === resultColor;
+                resultDiv.className = 'result-display ' + (won ? 'win' : 'lose');
+                
+                const newUser = Auth.getCurrentUser();
+                
+                if (won) {
+                    const winAmount = Math.floor(bet * multiplier);
+                    Auth.updateRobux(newUser.robux + winAmount);
+                    showMessage(`You win ${winAmount} R$! (${multiplier}x)`, 'win');
+                } else {
+                    showMessage(`You lose! It was ${colorNames[resultColor]}. Lost ${bet} R$`, 'lose');
+                }
+                
+                updateBalance();
+            }, 3000);
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        updateBalance();
+    </script>
+</body>
+</html>

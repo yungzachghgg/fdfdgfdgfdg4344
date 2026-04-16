@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f1629;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: #141b2d;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e2841;
+        }
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .info-icon {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #4a90d9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #4a90d9;
+        }
+        .game-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .game-title::before {
+            content: '♠';
+            color: #4a90d9;
+        }
+        .fair-play {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #8b9dc3;
+        }
+        .fair-play svg {
+            width: 16px;
+            height: 16px;
+            color: #00d084;
+        }
+        
+        /* Balance Bar */
+        .balance-bar {
+            background: #1a2133;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .balance-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #f9c337 0%, #f68f21 100%);
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: #141b2d;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .balance-amount {
+            font-family: 'Courier New', monospace;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .nav-btn {
+            background: #252d3d;
+            border: 1px solid #3a4558;
+            color: #8b9dc3;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .nav-btn:hover {
+            background: #303a4d;
+            color: #fff;
+        }
+        
+        /* Game Table */
+        .game-container {
+            background: #0f1629;
+            min-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .table-area {
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 16/10;
+            background: radial-gradient(ellipse at center, #1a2a4a 0%, #0f1629 70%);
+            border-radius: 50% / 30%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 60px;
+            border: 2px solid #1e3a5f;
+        }
+        
+        /* Dealer Section */
+        .dealer-section {
+            text-align: center;
+        }
+        .dealer-label {
+            font-size: 12px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .dealer-cards {
+            display: flex;
+            justify-content: center;
+            gap: -20px;
+        }
+        .dealer-value {
+            background: #4a5a8a;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        /* Table Center Info */
+        .table-info {
+            text-align: center;
+        }
+        .table-info h2 {
+            font-size: 11px;
+            color: #5a6a8a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .table-info p {
+            font-size: 10px;
+            color: #4a5a7a;
+        }
+        
+        /* Player Section */
+        .player-section {
+            text-align: center;
+            width: 100%;
+        }
+        .player-value {
+            background: #4a5a8a;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        .player-cards {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        /* Cards */
+        .card {
+            width: 80px;
+            height: 112px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card.red { color: #e74c3c; }
+        .card.black { color: #2c3e50; }
+        .card.back {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border: 2px solid #60a5fa;
+        }
+        .card-back-pattern {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-back-pattern::after {
+            content: 'LuckBlox';
+            font-size: 10px;
+            color: rgba(255,255,255,0.3);
+            transform: rotate(-45deg);
+        }
+        .card-corner {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .card-corner.top { top: 6px; left: 6px; }
+        .card-corner.bottom { bottom: 6px; right: 6px; transform: rotate(180deg); }
+        .card-center {
+            font-size: 36px;
+        }
+        
+        /* Action Buttons */
+        .action-bar {
+            background: #141b2d;
+            border-top: 1px solid #1e2841;
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-width: 80px;
+        }
+        
+        .action-btn .icon {
+            font-size: 20px;
+        }
+        
+        .btn-double {
+            background: #1e3a5f;
+            color: #4ade80;
+        }
+        .btn-double:hover { background: #254a75; }
+        
+        .btn-hit {
+            background: #1e3a5f;
+            color: #60a5fa;
+        }
+        .btn-hit:hover { background: #254a75; }
+        
+        .btn-stand {
+            background: #1e3a5f;
+            color: #fbbf24;
+        }
+        .btn-stand:hover { background: #254a75; }
+        
+        .btn-split {
+            background: #1e3a5f;
+            color: #a78bfa;
+        }
+        .btn-split:hover { background: #254a75; }
+        
+        .btn-deal {
+            background: linear-gradient(135deg, #f9c337 0%, #f68f21 100%);
+            color: #141b2d;
+            padding: 15px 40px;
+            font-size: 14px;
+        }
+        .btn-deal:hover { transform: translateY(-2px); }
+        
+        .action-btn:disabled {
+            background: #252d3d;
+            color: #5a6a8a;
+            cursor: not-allowed;
+        }
+        
+        /* Chips */
+        .chip-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .chip {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 3px dashed;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .chip-1 { background: #6b7280; border-color: #9ca3af; color: white; }
+        .chip-5 { background: #7c3aed; border-color: #a78bfa; color: white; }
+        .chip-10 { background: #0ea5e9; border-color: #38bdf8; color: white; }
+        .chip-25 { background: #10b981; border-color: #34d399; color: white; }
+        .chip-100 { background: #1e3a5f; border-color: #3b82f6; color: white; }
+        .chip-500 { background: #7c2d12; border-color: #c2410c; color: white; }
+        
+        .chip:hover { transform: scale(1.1); }
+        .chip.active { box-shadow: 0 0 0 3px #f9c337; }
+        
+        .bet-input {
+            background: #0f1629;
+            border: 1px solid #3a4558;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            width: 100px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        /* Message */
+        .message-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 100;
+            display: none;
+        }
+        .message-overlay.show { display: block; }
+        .message-win { background: rgba(0, 200, 100, 0.9); color: white; }
+        .message-lose { background: rgba(200, 50, 50, 0.9); color: white; }
+        .message-push { background: rgba(249, 195, 55, 0.9); color: #141b2d; }
+        
+        /* Mode Selection */
+        .mode-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 22, 41, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .mode-title {
+            font-size: 32px;
+            color: #F9C337;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .mode-buttons {
+            display: flex;
+            gap: 30px;
+        }
+        .mode-btn-large {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d1f33 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 40px 60px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            min-width: 250px;
+        }
+        .mode-btn-large:hover {
+            transform: translateY(-5px);
+            border-color: #F9C337;
+            box-shadow: 0 20px 40px rgba(249, 195, 55, 0.2);
+        }
+        .mode-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        .mode-label {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        .mode-desc {
+            font-size: 14px;
+            color: #8b9dc3;
+            margin-top: 10px;
+        }
+        
+        /* Waiting Room */
+        .waiting-room {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 22, 41, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .waiting-room.active { display: flex; }
+        .waiting-title {
+            font-size: 28px;
+            color: #F9C337;
+            margin-bottom: 30px;
+        }
+        .waiting-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #1e3a5f;
+            border-top-color: #F9C337;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .waiting-text {
+            color: #8b9dc3;
+            font-size: 16px;
+        }
+        .cancel-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            background: #39416d;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        /* Multiplayer UI */
+        .opponent-section {
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .opponent-section.active { opacity: 1; }
+        .opponent-label {
+            font-size: 12px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .opponent-name {
+            color: #F9C337;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .turn-indicator {
+            background: #F9C337;
+            color: #141b2d;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .table-area { padding: 20px 30px; }
+            .card { width: 60px; height: 84px; font-size: 20px; }
+            .action-btn { padding: 10px 16px; min-width: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mode Selection -->
+    <div class="mode-selection" id="mode-selection">
+        <h1 class="mode-title">Choose Game Mode</h1>
+        <div class="mode-buttons">
+            <div class="mode-btn-large" onclick="selectMode('bot')">
+                <div class="mode-icon">🤖</div>
+                <div class="mode-label">Play vs Bot</div>
+                <div class="mode-desc">Practice against AI dealer</div>
+            </div>
+            <div class="mode-btn-large" onclick="selectMode('multiplayer')">
+                <div class="mode-icon">👥</div>
+                <div class="mode-label">Play vs Player</div>
+                <div class="mode-desc">Compete with real players</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Waiting Room -->
+    <div class="waiting-room" id="waiting-room">
+        <h2 class="waiting-title">Finding Opponent...</h2>
+        <div class="waiting-spinner"></div>
+        <p class="waiting-text">Searching for players to join</p>
+        <button class="cancel-btn" onclick="cancelMatchmaking()">Cancel</button>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-left">
+            <div class="info-icon">i</div>
+            <div class="game-title">Blackjack</div>
+        </div>
+        <div class="fair-play">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="m9 12 2 2 4-4"/>
+            </svg>
+            Fair Play
+        </div>
+    </div>
+
+    <!-- Balance Bar -->
+    <div class="balance-bar">
+        <div class="balance-display">
+            <span>💰</span>
+            <span class="balance-amount" id="balance-display">0 R$</span>
+        </div>
+        <div class="nav-buttons">
+            <a href="../index.html" class="nav-btn">← Back to Games</a>
+            <button onclick="Auth.logout()" class="nav-btn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <div class="table-area">
+            <!-- Dealer Section -->
+            <div class="dealer-section" id="dealer-section">
+                <div class="dealer-label" id="dealer-label">Dealer</div>
+                <div class="dealer-cards" id="dealer-cards"></div>
+                <div class="dealer-value" id="dealer-value">--</div>
+            </div>
+
+            <!-- Opponent Section (Multiplayer) -->
+            <div class="opponent-section" id="opponent-section">
+                <div class="opponent-label">Your Opponent</div>
+                <div class="opponent-name" id="opponent-name">Waiting...</div>
+                <div class="turn-indicator" id="turn-indicator">Your Turn</div>
+                <div class="dealer-cards" id="opponent-cards"></div>
+                <div class="dealer-value" id="opponent-value">--</div>
+            </div>
+
+            <!-- Table Center Info -->
+            <div class="table-info">
+                <h2>Blackjack Pays 3 To 2</h2>
+                <p>Insurance Pays 2 To 1</p>
+            </div>
+
+            <!-- Player Section -->
+            <div class="player-section">
+                <div class="player-value" id="player-value">--</div>
+                <div class="player-cards" id="player-cards"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-buttons">
+            <button class="action-btn btn-double" id="double-btn" onclick="double()" disabled>
+                <span class="icon">×2</span>
+                <span>Double</span>
+            </button>
+            <button class="action-btn btn-hit" id="hit-btn" onclick="hit()" disabled>
+                <span class="icon">🎯</span>
+                <span>Hit</span>
+            </button>
+            <button class="action-btn btn-stand" id="stand-btn" onclick="stand()" disabled>
+                <span class="icon">✋</span>
+                <span>Stand</span>
+            </button>
+            <button class="action-btn btn-split" id="split-btn" onclick="split()" disabled>
+                <span class="icon">✌️</span>
+                <span>Split</span>
+            </button>
+        </div>
+
+        <div class="chip-selector">
+            <div class="chip chip-1" onclick="setBet(1)">1</div>
+            <div class="chip chip-5" onclick="setBet(5)">5</div>
+            <div class="chip chip-10" onclick="setBet(10)">10</div>
+            <div class="chip chip-25" onclick="setBet(25)">25</div>
+            <div class="chip chip-100 active" onclick="setBet(100)">100</div>
+            <div class="chip chip-500" onclick="setBet(500)">500</div>
+            <input type="number" class="bet-input" id="bet-amount" value="100" min="1">
+            <button class="action-btn btn-deal" id="deal-btn" onclick="deal()">Deal</button>
+        </div>
+    </div>
+
+    <!-- Message Overlay -->
+    <div id="message" class="message-overlay"></div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+        let opponentHand = [];
+        let gameActive = false;
+        let bet = 0;
+        let gameMode = null; // 'bot' or 'multiplayer'
+        let gameId = null;
+        let currentPlayer = 'player';
+        let opponentName = '';
+        let matchmakingInterval = null;
+        let gameStateInterval = null;
+        const API_URL = window.location.origin;
+
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value, numValue: getCardValue(value) });
+                }
+            }
+            shuffleDeck();
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function getCardValue(value) {
+            if (['J', 'Q', 'K'].includes(value)) return 10;
+            if (value === 'A') return 11;
+            return parseInt(value);
+        }
+
+        function calculateHandValue(hand) {
+            let value = hand.reduce((sum, card) => sum + card.numValue, 0);
+            let aces = hand.filter(c => c.value === 'A').length;
+            
+            while (value > 21 && aces > 0) {
+                value -= 10;
+                aces--;
+            }
+            
+            return value;
+        }
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function createCardElement(card, hidden = false) {
+            const div = document.createElement('div');
+            div.className = 'card ' + (hidden ? 'back' : (card.suit === '♥' || card.suit === '♦' ? 'red' : 'black'));
+            if (hidden) {
+                div.innerHTML = '<div class="card-back-pattern"></div>';
+            } else {
+                div.innerHTML = `
+                    <div class="card-corner top">${card.value}<br>${card.suit}</div>
+                    <div class="card-center">${card.suit}</div>
+                    <div class="card-corner bottom">${card.value}<br>${card.suit}</div>
+                `;
+            }
+            return div;
+        }
+
+        function renderHands(hideDealer = true) {
+            const playerCards = document.getElementById('player-cards');
+            const dealerCards = document.getElementById('dealer-cards');
+            
+            playerCards.innerHTML = '';
+            dealerCards.innerHTML = '';
+            
+            playerHand.forEach(card => playerCards.appendChild(createCardElement(card)));
+            
+            dealerHand.forEach((card, i) => {
+                dealerCards.appendChild(createCardElement(card, hideDealer && i === 1));
+            });
+            
+            const playerValue = calculateHandValue(playerHand);
+            document.getElementById('player-value').textContent = playerValue;
+            
+            if (hideDealer) {
+                const visibleValue = dealerHand[0].numValue;
+                document.getElementById('dealer-value').textContent = visibleValue + '+';
+            } else {
+                document.getElementById('dealer-value').textContent = calculateHandValue(dealerHand);
+            }
+        }
+
+        function setBet(amount) {
+            document.getElementById('bet-amount').value = amount;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            const chipMap = {1: 'chip-1', 5: 'chip-5', 10: 'chip-10', 25: 'chip-25', 100: 'chip-100', 500: 'chip-500'};
+            const chip = document.querySelector('.' + chipMap[amount]);
+            if (chip) chip.classList.add('active');
+        }
+
+        function double() {
+            if (!gameActive) return;
+            const user = Auth.getCurrentUser();
+            if (bet > user.robux) {
+                showMessage('Not enough balance to double', 'lose');
+                return;
+            }
+            Auth.updateRobux(user.robux - bet);
+            bet *= 2;
+            updateBalance();
+            playerHand.push(deck.pop());
+            renderHands(true);
+            const value = calculateHandValue(playerHand);
+            if (value > 21) {
+                endGame(false);
+            } else {
+                stand();
+            }
+        }
+
+        function split() {
+            // Simplified split - would need more logic for full implementation
+            showMessage('Split feature coming soon!', 'push');
+        }
+
+        function deal() {
+            bet = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', 'lose');
+                return;
+            }
+            
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            createDeck();
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            gameActive = true;
+            
+            renderHands(true);
+            
+            document.getElementById('deal-btn').disabled = true;
+            document.getElementById('hit-btn').disabled = false;
+            document.getElementById('stand-btn').disabled = false;
+            document.getElementById('double-btn').disabled = false;
+            document.getElementById('split-btn').disabled = true; // Simplified
+            hideMessage();
+            
+            const playerValue = calculateHandValue(playerHand);
+            if (playerValue === 21) {
+                stand(); // Auto-stand on blackjack
+            }
+        }
+
+        function hit() {
+            if (!gameActive) return;
+            
+            playerHand.push(deck.pop());
+            renderHands(true);
+            
+            // Disable double after hitting
+            document.getElementById('double-btn').disabled = true;
+            
+            const value = calculateHandValue(playerHand);
+            if (value > 21) {
+                endGame(false);
+            }
+        }
+
+        function stand() {
+            if (!gameActive) return;
+            
+            gameActive = false;
+            document.getElementById('hit-btn').disabled = true;
+            document.getElementById('stand-btn').disabled = true;
+            document.getElementById('double-btn').disabled = true;
+            
+            // Dealer draws
+            while (calculateHandValue(dealerHand) < 17) {
+                dealerHand.push(deck.pop());
+            }
+            
+            renderHands(false);
+            
+            const playerValue = calculateHandValue(playerHand);
+            const dealerValue = calculateHandValue(dealerHand);
+            
+            if (dealerValue > 21) {
+                endGame(true);
+            } else if (playerValue > dealerValue) {
+                endGame(true);
+            } else if (playerValue < dealerValue) {
+                endGame(false);
+            } else {
+                endGame(null); // Push
+            }
+        }
+
+        function endGame(win) {
+            const user = Auth.getCurrentUser();
+            
+            document.getElementById('deal-btn').disabled = false;
+            document.getElementById('hit-btn').disabled = true;
+            document.getElementById('stand-btn').disabled = true;
+            document.getElementById('double-btn').disabled = true;
+            
+            if (win === null) {
+                // Push - return bet
+                Auth.updateRobux(user.robux + bet);
+                showMessage('Push! Bet returned', 'push');
+            } else if (win) {
+                // Calculate win amount
+                const isBlackjack = calculateHandValue(playerHand) === 21 && playerHand.length === 2;
+                const winAmount = isBlackjack ? Math.floor(bet * 2.5) : bet * 2;
+                Auth.updateRobux(user.robux + winAmount);
+                showMessage(`You win ${winAmount} R$!`, 'win');
+            } else {
+                showMessage(`You lose ${bet} R$`, 'lose');
+            }
+            
+            updateBalance();
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message-overlay show message-' + type;
+            
+            setTimeout(() => {
+                hideMessage();
+            }, 3000);
+        }
+
+        function hideMessage() {
+            const msgDiv = document.getElementById('message');
+            msgDiv.className = 'message-overlay';
+        }
+
+        // Mode Selection Functions
+        function selectMode(mode) {
+            gameMode = mode;
+            document.getElementById('mode-selection').style.display = 'none';
+            
+            if (mode === 'bot') {
+                startBotGame();
+            } else {
+                startMultiplayerGame();
+            }
+        }
+
+        function startBotGame() {
+            // Bot game - dealer section visible, opponent hidden
+            document.getElementById('dealer-section').style.display = 'block';
+            document.getElementById('opponent-section').classList.remove('active');
+            document.getElementById('dealer-label').textContent = 'Dealer';
+        }
+
+        async function startMultiplayerGame() {
+            document.getElementById('waiting-room').classList.add('active');
+            
+            try {
+                const user = Auth.getCurrentUser();
+                
+                // Join matchmaking
+                const response = await fetch(`${API_URL}/api/blackjack/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: user.username,
+                        token: localStorage.getItem('authToken')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    gameId = data.gameId;
+                    
+                    // Check for opponent
+                    matchmakingInterval = setInterval(async () => {
+                        const statusRes = await fetch(`${API_URL}/api/blackjack/status/${gameId}`);
+                        const status = await statusRes.json();
+                        
+                        if (status.opponentJoined) {
+                            clearInterval(matchmakingInterval);
+                            document.getElementById('waiting-room').classList.remove('active');
+                            
+                            // Setup multiplayer UI
+                            opponentName = status.opponentName;
+                            document.getElementById('dealer-section').style.display = 'none';
+                            document.getElementById('opponent-section').classList.add('active');
+                            document.getElementById('opponent-name').textContent = opponentName;
+                            
+                            // Start multiplayer game
+                            startMultiplayerRound(status);
+                        }
+                    }, 2000);
+                } else {
+                    alert('Failed to join matchmaking: ' + data.error);
+                    document.getElementById('mode-selection').style.display = 'flex';
+                    document.getElementById('waiting-room').classList.remove('active');
+                }
+            } catch (err) {
+                console.error('Matchmaking error:', err);
+                alert('Server error. Playing in bot mode.');
+                selectMode('bot');
+            }
+        }
+
+        function cancelMatchmaking() {
+            clearInterval(matchmakingInterval);
+            document.getElementById('waiting-room').classList.remove('active');
+            document.getElementById('mode-selection').style.display = 'flex';
+            
+            // Leave matchmaking
+            if (gameId) {
+                fetch(`${API_URL}/api/blackjack/leave/${gameId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: localStorage.getItem('authToken') })
+                });
+            }
+        }
+
+        async function startMultiplayerRound(gameData) {
+            // Deduct bet
+            const user = Auth.getCurrentUser();
+            bet = 10; // Fixed bet for multiplayer
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            // Load hands from server
+            playerHand = gameData.playerHand;
+            opponentHand = gameData.opponentHand;
+            currentPlayer = gameData.currentPlayer;
+            
+            renderMultiplayerHands();
+            updateTurnIndicator();
+            
+            gameActive = true;
+            
+            // Poll for game state
+            gameStateInterval = setInterval(async () => {
+                await pollGameState();
+            }, 1000);
+        }
+
+        function renderMultiplayerHands() {
+            const playerCards = document.getElementById('player-cards');
+            const opponentCards = document.getElementById('opponent-cards');
+            
+            playerCards.innerHTML = '';
+            opponentCards.innerHTML = '';
+            
+            playerHand.forEach(card => playerCards.appendChild(createCardElement(card)));
+            opponentHand.forEach(card => opponentCards.appendChild(createCardElement(card, true))); // Hidden
+            
+            const playerValue = calculateHandValue(playerHand);
+            document.getElementById('player-value').textContent = playerValue;
+            document.getElementById('opponent-value').textContent = '--';
+        }
+
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turn-indicator');
+            const user = Auth.getCurrentUser();
+            
+            if (currentPlayer === user.username) {
+                indicator.textContent = 'Your Turn';
+                indicator.style.background = '#F9C337';
+                document.getElementById('hit-btn').disabled = false;
+                document.getElementById('stand-btn').disabled = false;
+            } else {
+                indicator.textContent = `${opponentName}'s Turn`;
+                indicator.style.background = '#8b9dc3';
+                document.getElementById('hit-btn').disabled = true;
+                document.getElementById('stand-btn').disabled = true;
+            }
+        }
+
+        async function pollGameState() {
+            if (!gameId || !gameActive) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/blackjack/state/${gameId}`);
+                const state = await response.json();
+                
+                if (state.gameOver) {
+                    clearInterval(gameStateInterval);
+                    endMultiplayerGame(state);
+                    return;
+                }
+                
+                if (state.currentPlayer !== currentPlayer) {
+                    currentPlayer = state.currentPlayer;
+                    
+                    // Update hands
+                    playerHand = state.playerHand;
+                    opponentHand = state.opponentHand;
+                    renderMultiplayerHands();
+                    updateTurnIndicator();
+                }
+            } catch (err) {
+                console.error('Poll error:', err);
+            }
+        }
+
+        async function multiplayerHit() {
+            if (gameMode !== 'multiplayer' || !gameActive) return;
+            
+            try {
+                const user = Auth.getCurrentUser();
+                const response = await fetch(`${API_URL}/api/blackjack/hit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gameId: gameId,
+                        username: user.username,
+                        token: localStorage.getItem('authToken')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    playerHand = data.hand;
+                    renderMultiplayerHands();
+                    
+                    if (data.bust) {
+                        showMessage('Bust! You lose.', 'lose');
+                    }
+                }
+            } catch (err) {
+                console.error('Hit error:', err);
+            }
+        }
+
+        async function multiplayerStand() {
+            if (gameMode !== 'multiplayer' || !gameActive) return;
+            
+            try {
+                const user = Auth.getCurrentUser();
+                await fetch(`${API_URL}/api/blackjack/stand`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gameId: gameId,
+                        username: user.username,
+                        token: localStorage.getItem('authToken')
+                    })
+                });
+                
+                document.getElementById('hit-btn').disabled = true;
+                document.getElementById('stand-btn').disabled = true;
+            } catch (err) {
+                console.error('Stand error:', err);
+            }
+        }
+
+        function endMultiplayerGame(state) {
+            gameActive = false;
+            
+            // Reveal opponent cards
+            const opponentCards = document.getElementById('opponent-cards');
+            opponentCards.innerHTML = '';
+            opponentHand.forEach(card => opponentCards.appendChild(createCardElement(card, false)));
+            document.getElementById('opponent-value').textContent = calculateHandValue(opponentHand);
+            
+            const user = Auth.getCurrentUser();
+            let won = false;
+            
+            if (state.winner === user.username) {
+                won = true;
+                const winAmount = bet * 2;
+                Auth.updateRobux(user.robux + winAmount);
+                showMessage(`You win ${winAmount} R$!`, 'win');
+            } else if (state.winner === 'tie') {
+                Auth.updateRobux(user.robux + bet);
+                showMessage('Push! Bet returned', 'push');
+            } else {
+                showMessage(`You lose ${bet} R$`, 'lose');
+            }
+            
+            updateBalance();
+            
+            // New round button
+            setTimeout(() => {
+                if (confirm('Play another round?')) {
+                    startMultiplayerRound();
+                } else {
+                    location.reload();
+                }
+            }, 3000);
+        }
+
+        // Override hit/stand for multiplayer
+        const originalHit = hit;
+        const originalStand = stand;
+        
+        hit = function() {
+            if (gameMode === 'multiplayer') {
+                multiplayerHit();
+            } else {
+                originalHit();
+            }
+        };
+        
+        stand = function() {
+            if (gameMode === 'multiplayer') {
+                multiplayerStand();
+            } else {
+                originalStand();
+            }
+        };
+
+        updateBalance();
+    </script>
+</body>
+</html>

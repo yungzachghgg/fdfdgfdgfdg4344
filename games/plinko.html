@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plinko - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 800px) {
+            .game-container { grid-template-columns: 1fr; }
+        }
+        .control-panel {
+            background: #192040;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+        }
+        .control-panel h2 {
+            color: #F9C337;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; color: #b2b2be; font-size: 14px; }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            background: #11173a;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+        }
+        .bet-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .bet-btn:disabled { background: #39416d; color: #8d8d9f; cursor: not-allowed; }
+        .game-board {
+            background: #192040;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #plinko-canvas { max-width: 100%; }
+        .multipliers {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .multiplier {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .multiplier.low { background: #cf2e2e; }
+        .multiplier.mid { background: #F9C337; color: #192040; }
+        .multiplier.high { background: #38c000; }
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .message.win { background: rgba(56, 192, 0, 0.2); color: #38c000; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="control-panel">
+            <h2>Plinko</h2>
+            <div class="input-group">
+                <label>Bet Amount (R$)</label>
+                <input type="number" id="bet-amount" min="1" value="10">
+            </div>
+            <div class="input-group">
+                <label>Risk Level</label>
+                <select id="risk-level">
+                    <option value="low">Low Risk</option>
+                    <option value="medium" selected>Medium Risk</option>
+                    <option value="high">High Risk</option>
+                </select>
+            </div>
+            <button class="bet-btn" id="bet-btn" onclick="dropBall()">Drop Ball</button>
+            <div id="result" style="margin-top: 20px; text-align: center;"></div>
+        </div>
+
+        <div class="game-board">
+            <canvas id="plinko-canvas" width="500" height="400"></canvas>
+            <div class="multipliers" id="multipliers"></div>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        const canvas = document.getElementById('plinko-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const multipliers = {
+            low: [0.5, 0.8, 1, 1.5, 2, 1.5, 1, 0.8, 0.5],
+            medium: [0.2, 0.5, 1, 2, 5, 2, 1, 0.5, 0.2],
+            high: [0, 0.2, 0.5, 1, 10, 1, 0.5, 0.2, 0]
+        };
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const risk = document.getElementById('risk-level').value;
+            const mults = multipliers[risk];
+            
+            // Draw pegs
+            ctx.fillStyle = '#4a5280';
+            const pegRadius = 4;
+            const rows = 12;
+            const startY = 60;
+            const pegSpacingX = 45;
+            const pegSpacingY = 28;
+            
+            for (let row = 0; row < rows; row++) {
+                const pegsInRow = row + 3;
+                const startX = (canvas.width - (pegsInRow - 1) * pegSpacingX) / 2;
+                
+                for (let col = 0; col < pegsInRow; col++) {
+                    const x = startX + col * pegSpacingX;
+                    const y = startY + row * pegSpacingY;
+                    ctx.beginPath();
+                    ctx.arc(x, y, pegRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Draw multipliers
+            const bucketWidth = canvas.width / mults.length;
+            mults.forEach((m, i) => {
+                const x = i * bucketWidth;
+                const color = m < 1 ? '#cf2e2e' : m < 3 ? '#F9C337' : '#38c000';
+                ctx.fillStyle = color;
+                ctx.fillRect(x + 2, canvas.height - 40, bucketWidth - 4, 38);
+                ctx.fillStyle = '#192040';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(m + 'x', x + bucketWidth / 2, canvas.height - 15);
+            });
+            
+            // Update multiplier display
+            const multDiv = document.getElementById('multipliers');
+            multDiv.innerHTML = mults.map(m => {
+                const cls = m < 1 ? 'low' : m < 3 ? 'mid' : 'high';
+                return `<div class="multiplier ${cls}">${m}x</div>`;
+            }).join('');
+        }
+
+        function dropBall() {
+            const bet = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', true);
+                return;
+            }
+            
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            document.getElementById('bet-btn').disabled = true;
+            
+            const risk = document.getElementById('risk-level').value;
+            const mults = multipliers[risk];
+            
+            // Simulate ball path
+            let position = Math.floor(Math.random() * 3); // Start position
+            const path = [];
+            
+            for (let row = 0; row < 12; row++) {
+                const direction = Math.random() < 0.5 ? 0 : 1;
+                position += direction;
+                path.push({ row, position, direction });
+            }
+            
+            // Animate ball
+            let step = 0;
+            const pegSpacingX = 45;
+            const pegSpacingY = 28;
+            const startY = 60;
+            
+            function animate() {
+                drawBoard();
+                
+                if (step < path.length) {
+                    const p = path[step];
+                    const pegsInRow = p.row + 3;
+                    const startX = (canvas.width - (pegsInRow - 1) * pegSpacingX) / 2;
+                    const x = startX + p.position * pegSpacingX;
+                    const y = startY + p.row * pegSpacingY - 15;
+                    
+                    ctx.fillStyle = '#F9C337';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    step++;
+                    setTimeout(animate, 100);
+                } else {
+                    // Ball landed
+                    const finalPos = Math.min(position, mults.length - 1);
+                    const multiplier = mults[finalPos];
+                    const winAmount = Math.floor(bet * multiplier);
+                    
+                    const newUser = Auth.getCurrentUser();
+                    Auth.updateRobux(newUser.robux + winAmount);
+                    updateBalance();
+                    
+                    const resultDiv = document.getElementById('result');
+                    if (multiplier >= 1) {
+                        resultDiv.innerHTML = `<div style="color: #38c000; font-size: 20px;">Won ${winAmount} R$ (${multiplier}x)</div>`;
+                    } else {
+                        resultDiv.innerHTML = `<div style="color: #ff6b6b;">Lost ${bet} R$ (${multiplier}x)</div>`;
+                    }
+                    
+                    document.getElementById('bet-btn').disabled = false;
+                }
+            }
+            
+            animate();
+        }
+
+        function showMessage(text, isError) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + (isError ? '' : 'win');
+        }
+
+        document.getElementById('risk-level').addEventListener('change', drawBoard);
+        
+        drawBoard();
+        updateBalance();
+    </script>
+</body>
+</html>

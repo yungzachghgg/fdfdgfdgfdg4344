@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .game-board {
+            background: #192040;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+        }
+        .control-panel {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { color: #b2b2be; font-size: 14px; }
+        .input-group input {
+            padding: 12px;
+            background: #11173a;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 120px;
+        }
+        .action-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .start-btn {
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+        }
+        .stop-btn {
+            background: linear-gradient(90deg, #38c000 0%, #2da300 100%);
+            color: white;
+        }
+        .action-btn:disabled {
+            background: #39416d;
+            color: #8d8d9f;
+            cursor: not-allowed;
+        }
+        .slide-container {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(180deg, #0d3b1e 0%, #192040 50%, #3a1c1c 100%);
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+            border: 2px solid #39416d;
+        }
+        .slide-track {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%);
+        }
+        .slider {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(180deg, #F9C337 0%, #f68f21 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #192040;
+            box-shadow: 0 5px 20px rgba(249, 195, 55, 0.5);
+            transition: none;
+        }
+        .multiplier-zones {
+            position: absolute;
+            right: 20px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 0;
+        }
+        .zone {
+            text-align: right;
+            font-weight: bold;
+        }
+        .zone.safe { color: #38c000; }
+        .zone.danger { color: #F9C337; }
+        .zone.bust { color: #ff6b6b; }
+        .multiplier-display {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #F9C337;
+            margin: 20px 0;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stat {
+            background: #11173a;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #8d8d9f;
+            margin-top: 5px;
+        }
+        .message {
+            text-align: center;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        .message.win { background: rgba(56, 192, 0, 0.2); color: #38c000; }
+        .message.lose { background: rgba(207, 46, 46, 0.2); color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <h2 style="text-align: center; color: #F9C337; margin-bottom: 10px;">Slide</h2>
+            <p style="text-align: center; color: #b2b2be; margin-bottom: 30px;">Stop the slider before it crashes! The higher it goes, the bigger the multiplier!</p>
+            
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Bet Amount (R$)</label>
+                    <input type="number" id="bet-amount" min="1" value="10">
+                </div>
+                <button class="action-btn start-btn" id="start-btn" onclick="startSlide()">Start</button>
+                <button class="action-btn stop-btn" id="stop-btn" onclick="stopSlide()" disabled>Stop</button>
+            </div>
+
+            <div class="multiplier-display" id="multiplier">1.00x</div>
+
+            <div class="slide-container">
+                <div class="slide-track"></div>
+                <div class="slider" id="slider" style="top: 0%;">🚀</div>
+                <div class="multiplier-zones">
+                    <div class="zone bust">10.00x (BUST)</div>
+                    <div class="zone danger">5.00x</div>
+                    <div class="zone safe">2.00x</div>
+                    <div class="zone safe">1.00x</div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="current-mult">1.00x</div>
+                    <div class="stat-label">Current Multiplier</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="potential-win">0 R$</div>
+                    <div class="stat-label">Potential Win</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="crash-point">?</div>
+                    <div class="stat-label">Crash Point</div>
+                </div>
+            </div>
+
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        let gameState = { active: false, position: 0, multiplier: 1, crashPoint: 0, bet: 0 };
+        let animationId = null;
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function startSlide() {
+            const bet = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', 'lose');
+                return;
+            }
+            
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            // Determine crash point (random between 1.5x and 15x)
+            gameState = {
+                active: true,
+                position: 0,
+                multiplier: 1,
+                crashPoint: 1.5 + Math.random() * 13.5,
+                bet: bet
+            };
+            
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = false;
+            document.getElementById('crash-point').textContent = gameState.crashPoint.toFixed(2) + 'x';
+            document.getElementById('message').textContent = '';
+            
+            animate();
+        }
+
+        function animate() {
+            if (!gameState.active) return;
+            
+            // Increase position and multiplier
+            gameState.multiplier += 0.02 + (gameState.multiplier * 0.005);
+            gameState.position = Math.min((gameState.multiplier - 1) / 9 * 90, 95);
+            
+            // Update display
+            document.getElementById('slider').style.top = gameState.position + '%';
+            document.getElementById('multiplier').textContent = gameState.multiplier.toFixed(2) + 'x';
+            document.getElementById('current-mult').textContent = gameState.multiplier.toFixed(2) + 'x';
+            document.getElementById('potential-win').textContent = Math.floor(gameState.bet * gameState.multiplier) + ' R$';
+            
+            // Check for crash
+            if (gameState.multiplier >= gameState.crashPoint) {
+                crash();
+                return;
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function stopSlide() {
+            if (!gameState.active) return;
+            
+            gameState.active = false;
+            cancelAnimationFrame(animationId);
+            
+            const winAmount = Math.floor(gameState.bet * gameState.multiplier);
+            const user = Auth.getCurrentUser();
+            Auth.updateRobux(user.robux + winAmount);
+            updateBalance();
+            
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('stop-btn').disabled = true;
+            document.getElementById('start-btn').textContent = 'Play Again';
+            
+            showMessage(`Stopped at ${gameState.multiplier.toFixed(2)}x! You won ${winAmount} R$`, 'win');
+        }
+
+        function crash() {
+            gameState.active = false;
+            cancelAnimationFrame(animationId);
+            
+            document.getElementById('slider').textContent = '💥';
+            document.getElementById('multiplier').textContent = 'CRASHED!';
+            document.getElementById('multiplier').style.color = '#ff6b6b';
+            
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('stop-btn').disabled = true;
+            document.getElementById('start-btn').textContent = 'Play Again';
+            
+            showMessage(`Crashed at ${gameState.crashPoint.toFixed(2)}x! You lost ${gameState.bet} R$`, 'lose');
+            
+            setTimeout(() => {
+                document.getElementById('slider').textContent = '🚀';
+                document.getElementById('multiplier').style.color = '#F9C337';
+            }, 2000);
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        updateBalance();
+    </script>
+</body>
+</html>

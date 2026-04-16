@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baccarat - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0d;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 100;
+        }
+        .logo img { height: 36px; }
+        .user-info { display: flex; align-items: center; gap: 14px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.1);
+            border: 1px solid rgba(249, 195, 55, 0.3);
+            padding: 7px 16px;
+            border-radius: 6px;
+            color: #F9C337;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            perspective: 1200px;
+        }
+        .game-board {
+            background: linear-gradient(180deg, #1a5a3a 0%, #0f3d26 50%, #0a2818 100%);
+            border-radius: 200px 200px 0 0;
+            padding: 60px 60px 20px;
+            position: relative;
+            box-shadow: 
+                0 -5px 20px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(255,255,255,0.05),
+                0 30px 60px rgba(0,0,0,0.6);
+            border: 8px solid #8b4513;
+            border-bottom: none;
+        }
+        .game-board::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            border-radius: 200px 200px 0 0;
+            pointer-events: none;
+        }
+        .table-title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Georgia', serif;
+            font-size: 28px;
+            color: #d4af37;
+            font-style: italic;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .card-areas {
+            display: flex;
+            justify-content: space-around;
+            margin: 70px 0 60px;
+            gap: 80px;
+        }
+        .card-spot {
+            flex: 1;
+            text-align: center;
+        }
+        .spot-label {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .spot-value {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #d4af37;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            margin: 0 auto 15px;
+        }
+        .cards-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            min-height: 140px;
+            align-items: center;
+        }
+        .card {
+            width: 90px;
+            height: 130px;
+            background: linear-gradient(145deg, #fff 0%, #f5f5f5 100%);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            font-size: 36px;
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.3),
+                0 1px 2px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            animation: dealCard 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 6px;
+        }
+        @keyframes dealCard {
+            from { transform: translateY(-100px) rotate(-10deg) scale(0.5); opacity: 0; }
+            to { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+        }
+        .betting-zones {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 50px;
+            position: relative;
+        }
+        .bet-zone {
+            flex: 1;
+            max-width: 280px;
+            padding: 25px 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            border: 3px solid rgba(212, 175, 55, 0.3);
+            background: rgba(0,0,0,0.2);
+        }
+        .bet-zone:first-child {
+            border-radius: 60px 0 0 0;
+            border-right: none;
+        }
+        .bet-zone:last-child {
+            border-radius: 0 60px 0 0;
+            border-left: none;
+        }
+        .bet-zone:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateY(-3px);
+        }
+        .bet-zone.selected {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: #d4af37;
+            box-shadow: inset 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+        .bet-zone.selected::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: chipGlow 1.5s infinite;
+        }
+        @keyframes chipGlow {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        .zone-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .zone-payout {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .bottom-bar {
+            background: rgba(0,0,0,0.6);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .bet-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .bet-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 15px;
+            width: 130px;
+            font-weight: 600;
+        }
+        .bet-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(255,255,255,0.08);
+        }
+        .deal-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: #000;
+            border: none;
+            padding: 12px 50px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+        .deal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+        }
+        .deal-btn:active {
+            transform: translateY(0);
+        }
+        .deal-btn:disabled {
+            background: rgba(100, 100, 100, 0.3);
+            color: rgba(255,255,255,0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .result-display {
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 300px;
+            text-align: center;
+        }
+        .result-display.win { color: #4ade80; }
+        .result-display.lose { color: #f87171; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <div class="table-title">Baccarat</div>
+            
+            <div class="card-areas">
+                <div class="card-spot">
+                    <div class="spot-label">PLAYER</div>
+                    <div class="spot-value" id="player-value">-</div>
+                    <div class="cards-container" id="player-cards"></div>
+                </div>
+                
+                <div class="card-spot">
+                    <div class="spot-label">BANKER</div>
+                    <div class="spot-value" id="banker-value">-</div>
+                    <div class="cards-container" id="banker-cards"></div>
+                </div>
+            </div>
+            
+            <div class="betting-zones">
+                <div class="bet-zone" data-bet="player">
+                    <div class="zone-name" style="color: #3b82f6;">PLAYER</div>
+                    <div class="zone-payout">Pays 1:1</div>
+                </div>
+                <div class="bet-zone" data-bet="tie">
+                    <div class="zone-name" style="color: #fbbf24;">TIE</div>
+                    <div class="zone-payout">Pays 8:1</div>
+                </div>
+                <div class="bet-zone" data-bet="banker">
+                    <div class="zone-name" style="color: #ef4444;">BANKER</div>
+                    <div class="zone-payout">Pays 0.95:1</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-bar">
+            <div class="bet-controls">
+                <input type="number" class="bet-input" id="bet-amount" value="10" min="1" placeholder="Bet">
+                <button class="deal-btn" id="deal-btn" onclick="deal()">DEAL</button>
+            </div>
+            <div class="result-display" id="result"></div>
+            <div style="width: 200px;"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        const API_URL = window.location.origin;
+        let currentBet = null;
+        let isDealing = false;
+        
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+        
+        // Setup betting zones
+        document.querySelectorAll('.bet-zone').forEach(zone => {
+            zone.addEventListener('click', function() {
+                if (isDealing) return;
+                document.querySelectorAll('.bet-zone').forEach(z => z.classList.remove('selected'));
+                this.classList.add('selected');
+                currentBet = this.dataset.bet;
+            });
+        });
+        
+        async function deal() {
+            if (isDealing) return;
+            if (!currentBet) {
+                alert('Please select a bet: Player, Banker, or Tie!');
+                return;
+            }
+            
+            const betAmount = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (betAmount < 1 || betAmount > user.robux) {
+                alert('Invalid bet amount!');
+                return;
+            }
+            
+            isDealing = true;
+            document.getElementById('deal-btn').disabled = true;
+            document.getElementById('result').textContent = '';
+            document.getElementById('player-cards').innerHTML = '';
+            document.getElementById('banker-cards').innerHTML = '';
+            document.getElementById('player-value').textContent = '-';
+            document.getElementById('banker-value').textContent = '-';
+            
+            // Deduct bet
+            Auth.updateRobux(user.robux - betAmount);
+            updateBalance();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/baccarat/deal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: user.username,
+                        bet: currentBet,
+                        betAmount: betAmount,
+                        token: localStorage.getItem('authToken')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Animate dealing
+                await dealCards(data.playerHand, data.bankerHand);
+                
+                // Show result
+                const resultDiv = document.getElementById('result');
+                
+                if (data.win) {
+                    Auth.updateRobux(Auth.getCurrentUser().robux + data.winAmount);
+                    resultDiv.textContent = `${data.result.toUpperCase()} WINS! +${data.winAmount} R$`;
+                    resultDiv.className = 'result-display win';
+                } else if (data.result === 'tie' && currentBet === 'tie') {
+                    Auth.updateRobux(Auth.getCurrentUser().robux + data.winAmount);
+                    resultDiv.textContent = `TIE! +${data.winAmount} R$`;
+                    resultDiv.className = 'result-display win';
+                } else {
+                    resultDiv.textContent = `${data.result.toUpperCase()} WINS - ${betAmount} R$`;
+                    resultDiv.className = 'result-display lose';
+                }
+                
+                updateBalance();
+                
+            } catch (err) {
+                console.error('Deal error:', err);
+                // Fallback to client-side
+                fallbackDeal(betAmount);
+            }
+            
+            isDealing = false;
+            document.getElementById('deal-btn').disabled = false;
+        }
+        
+        async function dealCards(playerHand, bankerHand) {
+            // Deal player cards
+            for (let i = 0; i < playerHand.length; i++) {
+                await new Promise(r => setTimeout(r, 500));
+                addCard('player-cards', playerHand[i]);
+                document.getElementById('player-value').textContent = calculateValue(playerHand.slice(0, i + 1));
+            }
+            
+            // Deal banker cards
+            for (let i = 0; i < bankerHand.length; i++) {
+                await new Promise(r => setTimeout(r, 500));
+                addCard('banker-cards', bankerHand[i]);
+                document.getElementById('banker-value').textContent = calculateValue(bankerHand.slice(0, i + 1));
+            }
+            
+            await new Promise(r => setTimeout(r, 500));
+        }
+        
+        function addCard(elementId, card) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card';
+            const color = (card.suit === '♥' || card.suit === '♦') ? '#dc2626' : '#1f2937';
+            cardDiv.innerHTML = `<span style="color: ${color}; font-weight: bold;">${card.value}<br><span style="font-size: 24px;">${card.suit}</span></span>`;
+            document.getElementById(elementId).appendChild(cardDiv);
+        }
+        
+        function calculateValue(hand) {
+            let value = 0;
+            for (let card of hand) {
+                let val = card.numValue;
+                if (val > 9) val = 0;
+                value += val;
+            }
+            return value % 10;
+        }
+        
+        function fallbackDeal(betAmount) {
+            // Simple fallback logic
+            const suits = ['♠', '♥', '♦', '♣'];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            
+            function getVal(v) {
+                if (v === 'A') return 1;
+                if (['J', 'Q', 'K', '10'].includes(v)) return 0;
+                return parseInt(v);
+            }
+            
+            function draw() {
+                return {
+                    suit: suits[Math.floor(Math.random() * 4)],
+                    value: values[Math.floor(Math.random() * 13)],
+                    numValue: getVal(values[Math.floor(Math.random() * 13)])
+                };
+            }
+            
+            const playerHand = [draw(), draw()];
+            const bankerHand = [draw(), draw()];
+            
+            dealCards(playerHand, bankerHand).then(() => {
+                const pVal = calculateValue(playerHand);
+                const bVal = calculateValue(bankerHand);
+                
+                let result, win = false, winAmount = 0;
+                
+                if (pVal > bVal) result = 'player';
+                else if (bVal > pVal) result = 'banker';
+                else result = 'tie';
+                
+                if (currentBet === result) {
+                    win = true;
+                    const multiplier = result === 'tie' ? 9 : (result === 'banker' ? 1.95 : 2);
+                    winAmount = Math.floor(betAmount * multiplier);
+                    Auth.updateRobux(Auth.getCurrentUser().robux + winAmount);
+                }
+                
+                const resultDiv = document.getElementById('result');
+                if (win) {
+                    resultDiv.textContent = `${result.toUpperCase()} WINS! +${winAmount} R$`;
+                    resultDiv.className = 'result-display win';
+                } else {
+                    resultDiv.textContent = `${result.toUpperCase()} WINS - ${betAmount} R$`;
+                    resultDiv.className = 'result-display lose';
+                }
+                
+                updateBalance();
+            });
+        }
+        
+        updateBalance();
+    </script>
+</body>
+</html>

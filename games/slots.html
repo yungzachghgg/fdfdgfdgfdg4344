@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slots - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .game-board {
+            background: #192040;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+            text-align: center;
+        }
+        .game-board h2 {
+            color: #F9C337;
+            margin-bottom: 10px;
+        }
+        .subtitle { color: #b2b2be; margin-bottom: 30px; }
+        .control-panel {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { color: #b2b2be; font-size: 14px; }
+        .input-group input {
+            padding: 12px;
+            background: #11173a;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 120px;
+        }
+        .spin-btn {
+            padding: 15px 50px;
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .spin-btn:hover:not(:disabled) { transform: scale(1.05); }
+        .spin-btn:disabled { background: #39416d; color: #8d8d9f; cursor: not-allowed; transform: none; }
+        .slot-machine {
+            background: linear-gradient(180deg, #2d3561 0%, #1b1f40 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #F9C337;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .reels-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .reel {
+            width: 100px;
+            height: 120px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        .reel.spinning {
+            animation: spin-reel 0.1s linear infinite;
+        }
+        @keyframes spin-reel {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+        .payline {
+            height: 4px;
+            background: #ff0000;
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 10px #ff0000;
+        }
+        .win-lines {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .win-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .win-line .symbols {
+            font-size: 24px;
+        }
+        .win-line .payout {
+            color: #38c000;
+            font-weight: bold;
+        }
+        .message {
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .message.win { background: rgba(56, 192, 0, 0.2); color: #38c000; }
+        .message.jackpot { background: linear-gradient(90deg, rgba(249, 195, 55, 0.3), rgba(246, 143, 33, 0.3)); color: #F9C337; animation: pulse 1s infinite; }
+        .message.lose { background: rgba(207, 46, 46, 0.2); color: #ff6b6b; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .last-win {
+            margin-top: 15px;
+            color: #8ed1fc;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <h2>Slots</h2>
+            <p class="subtitle">Match 3 symbols to win! Jackpot for 7s!</p>
+            
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Bet Amount (R$)</label>
+                    <input type="number" id="bet-amount" min="1" value="10">
+                </div>
+                <button class="spin-btn" id="spin-btn" onclick="spin()">SPIN</button>
+            </div>
+
+            <div class="slot-machine">
+                <div class="reels-container">
+                    <div class="reel" id="reel-0"></div>
+                    <div class="reel" id="reel-1"></div>
+                    <div class="reel" id="reel-2"></div>
+                </div>
+                <div class="payline"></div>
+            </div>
+
+            <div class="win-lines">
+                <div class="win-line">
+                    <span class="symbols">🎰🎰🎰</span>
+                    <span>Jackpot - </span>
+                    <span class="payout">50x</span>
+                </div>
+                <div class="win-line">
+                    <span class="symbols">7️⃣7️⃣7️⃣</span>
+                    <span>Lucky 7s - </span>
+                    <span class="payout">25x</span>
+                </div>
+                <div class="win-line">
+                    <span class="symbols">💎💎💎</span>
+                    <span>Diamonds - </span>
+                    <span class="payout">15x</span>
+                </div>
+                <div class="win-line">
+                    <span class="symbols">🔔🔔🔔</span>
+                    <span>Bells - </span>
+                    <span class="payout">10x</span>
+                </div>
+                <div class="win-line">
+                    <span class="symbols">🍇🍇🍇</span>
+                    <span>Grapes - </span>
+                    <span class="payout">5x</span>
+                </div>
+                <div class="win-line">
+                    <span class="symbols">🍊🍊🍊</span>
+                    <span>Oranges - </span>
+                    <span class="payout">3x</span>
+                </div>
+                <div class="win-line">
+                    <span class="symbols">🍒🍒🍒</span>
+                    <span>Cherries - </span>
+                    <span class="payout">2x</span>
+                </div>
+            </div>
+
+            <div class="last-win" id="last-win"></div>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        const symbols = [
+            { icon: '🍒', weight: 30, payout: 2 },
+            { icon: '🍊', weight: 25, payout: 3 },
+            { icon: '🍇', weight: 20, payout: 5 },
+            { icon: '🔔', weight: 15, payout: 10 },
+            { icon: '💎', weight: 8, payout: 15 },
+            { icon: '7️⃣', weight: 2, payout: 25 },
+            { icon: '🎰', weight: 0.1, payout: 50 }
+        ];
+        
+        let isSpinning = false;
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function getRandomSymbol() {
+            const totalWeight = symbols.reduce((sum, s) => sum + s.weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (const symbol of symbols) {
+                random -= symbol.weight;
+                if (random <= 0) return symbol;
+            }
+            return symbols[0];
+        }
+
+        function spin() {
+            if (isSpinning) return;
+            
+            const bet = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', 'lose');
+                return;
+            }
+            
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            isSpinning = true;
+            document.getElementById('spin-btn').disabled = true;
+            document.getElementById('message').textContent = '';
+            
+            const reels = [
+                document.getElementById('reel-0'),
+                document.getElementById('reel-1'),
+                document.getElementById('reel-2')
+            ];
+            
+            const results = [];
+            
+            // Spin animation
+            reels.forEach((reel, i) => {
+                reel.classList.add('spinning');
+                
+                setTimeout(() => {
+                    reel.classList.remove('spinning');
+                    const symbol = getRandomSymbol();
+                    results.push(symbol);
+                    reel.textContent = symbol.icon;
+                }, 500 + i * 300);
+            });
+            
+            // Check result
+            setTimeout(() => {
+                isSpinning = false;
+                document.getElementById('spin-btn').disabled = false;
+                
+                checkWin(results, bet);
+            }, 1500);
+        }
+
+        function checkWin(results, bet) {
+            const [r1, r2, r3] = results;
+            const newUser = Auth.getCurrentUser();
+            
+            if (r1.icon === r2.icon && r2.icon === r3.icon) {
+                // All 3 match!
+                const winAmount = bet * r1.payout;
+                Auth.updateRobux(newUser.robux + winAmount);
+                
+                const isJackpot = r1.payout >= 50;
+                showMessage(`JACKPOT! ${r1.icon} x3 = ${winAmount} R$`, isJackpot ? 'jackpot' : 'win');
+                
+                document.getElementById('last-win').textContent = `Last win: ${winAmount} R$`;
+            } else if (r1.icon === r2.icon || r2.icon === r3.icon || r1.icon === r3.icon) {
+                // 2 match - small win
+                const winAmount = Math.floor(bet * 0.5);
+                Auth.updateRobux(newUser.robux + winAmount);
+                showMessage(`Two match! You win ${winAmount} R$`, 'win');
+                document.getElementById('last-win').textContent = `Last win: ${winAmount} R$`;
+            } else {
+                showMessage(`No match! You lose ${bet} R$`, 'lose');
+            }
+            
+            updateBalance();
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        updateBalance();
+    </script>
+</body>
+</html>

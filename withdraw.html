@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw - LuckBlox</title>
+    <link rel="icon" href="wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0d;
+            min-height: 100vh;
+            color: #fff;
+        }
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo img { height: 36px; }
+        .user-info { display: flex; align-items: center; gap: 14px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.1);
+            border: 1px solid rgba(249, 195, 55, 0.3);
+            padding: 7px 16px;
+            border-radius: 6px;
+            color: #F9C337;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .withdraw-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .subtitle {
+            color: #8b9dc3;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .balance-display {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .balance-label {
+            font-size: 12px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: #F9C337;
+            margin-top: 8px;
+        }
+        
+        .crypto-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .crypto-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .crypto-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(249, 195, 55, 0.3);
+        }
+        
+        .crypto-item.selected {
+            background: rgba(249, 195, 55, 0.1);
+            border-color: #F9C337;
+        }
+        
+        .crypto-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .crypto-icon.btc { background: #f7931a; }
+        .crypto-icon.eth { background: #627eea; }
+        .crypto-icon.usdt { background: #26a17b; }
+        .crypto-icon.ltc { background: #bfbbbb; color: #333; }
+        .crypto-icon.sol { background: #9945ff; }
+        .crypto-icon.trx { background: #ff060a; }
+        
+        .crypto-info {
+            flex: 1;
+        }
+        
+        .crypto-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .crypto-fullname {
+            font-size: 12px;
+            color: #8b9dc3;
+        }
+        
+        .crypto-rate {
+            font-size: 13px;
+            color: #8b9dc3;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #8b9dc3;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #F9C337;
+        }
+        
+        .amount-input-wrapper {
+            position: relative;
+        }
+        
+        .currency-badge {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(249, 195, 55, 0.2);
+            color: #F9C337;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .conversion-preview {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .conversion-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .conversion-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-weight: 600;
+        }
+        
+        .withdraw-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #F9C337 0%, #f68f21 100%);
+            color: #141b2d;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .withdraw-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(249, 195, 55, 0.3);
+        }
+        
+        .withdraw-btn:disabled {
+            background: #39416d;
+            color: #8b9dc3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .history-section {
+            margin-top: 30px;
+        }
+        
+        .history-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .history-crypto {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .history-amount {
+            color: #F9C337;
+            font-weight: 600;
+        }
+        
+        .history-status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        
+        .status-completed {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .success-message {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="dashboard.html" class="logo">
+            <img src="XwOME.jpg" alt="LuckBlox" style="height: 36px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="nav-balance">0 R$</div>
+            <a href="dashboard.html" class="back-btn">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="withdraw-card">
+            <h2>💸 Withdraw Crypto</h2>
+            <p class="subtitle">Convert your R$ to cryptocurrency</p>
+            
+            <div class="balance-display">
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-amount" id="balance-amount">0 R$</div>
+            </div>
+            
+            <div class="error-message" id="error-message"></div>
+            <div class="success-message" id="success-message"></div>
+            
+            <div class="form-group">
+                <label class="form-label">Select Cryptocurrency</label>
+                <div class="crypto-list">
+                    <div class="crypto-item selected" data-crypto="BTC" data-rate="0.0000015">
+                        <div class="crypto-icon btc">₿</div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">BTC</div>
+                            <div class="crypto-fullname">Bitcoin</div>
+                        </div>
+                        <div class="crypto-rate">1 R$ = 0.0000015 BTC</div>
+                    </div>
+                    
+                    <div class="crypto-item" data-crypto="ETH" data-rate="0.000025">
+                        <div class="crypto-icon eth">Ξ</div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">ETH</div>
+                            <div class="crypto-fullname">Ethereum</div>
+                        </div>
+                        <div class="crypto-rate">1 R$ = 0.000025 ETH</div>
+                    </div>
+                    
+                    <div class="crypto-item" data-crypto="USDT" data-rate="0.01">
+                        <div class="crypto-icon usdt">₮</div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">USDT</div>
+                            <div class="crypto-fullname">Tether</div>
+                        </div>
+                        <div class="crypto-rate">1 R$ = 0.01 USDT</div>
+                    </div>
+                    
+                    <div class="crypto-item" data-crypto="LTC" data-rate="0.0001">
+                        <div class="crypto-icon ltc">Ł</div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">LTC</div>
+                            <div class="crypto-fullname">Litecoin</div>
+                        </div>
+                        <div class="crypto-rate">1 R$ = 0.0001 LTC</div>
+                    </div>
+                    
+                    <div class="crypto-item" data-crypto="SOL" data-rate="0.0005">
+                        <div class="crypto-icon sol">◎</div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">SOL</div>
+                            <div class="crypto-fullname">Solana</div>
+                        </div>
+                        <div class="crypto-rate">1 R$ = 0.0005 SOL</div>
+                    </div>
+                    
+                    <div class="crypto-item" data-crypto="TRX" data-rate="0.1">
+                        <div class="crypto-icon trx">TRX</div>
+                        <div class="crypto-info">
+                            <div class="crypto-name">TRX</div>
+                            <div class="crypto-fullname">TRON</div>
+                        </div>
+                        <div class="crypto-rate">1 R$ = 0.1 TRX</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Wallet Address</label>
+                <input type="text" class="form-input" id="wallet-address" placeholder="Enter your wallet address">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Amount (R$)</label>
+                <div class="amount-input-wrapper">
+                    <input type="number" class="form-input" id="amount" placeholder="0.00" min="10">
+                    <span class="currency-badge">R$</span>
+                </div>
+            </div>
+            
+            <div class="conversion-preview" id="conversion-preview" style="display: none;">
+                <div class="conversion-row">
+                    <span>You Send</span>
+                    <span id="send-amount">0 R$</span>
+                </div>
+                <div class="conversion-row">
+                    <span>Fee (1%)</span>
+                    <span id="fee-amount">0 R$</span>
+                </div>
+                <div class="conversion-row">
+                    <span>You Receive</span>
+                    <span id="receive-amount">0 BTC</span>
+                </div>
+            </div>
+            
+            <button class="withdraw-btn" id="withdraw-btn" onclick="submitWithdrawal()">Withdraw</button>
+            
+            <div class="history-section">
+                <h3 class="history-title">Recent Withdrawals</h3>
+                <div class="history-list" id="history-list">
+                    <div style="text-align: center; color: #8b9dc3; padding: 20px;">No withdrawals yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        const API_URL = window.location.origin;
+        let selectedCrypto = 'BTC';
+        let selectedRate = 0.0000015;
+        
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('nav-balance').textContent = user.robux + ' R$';
+            document.getElementById('balance-amount').textContent = user.robux + ' R$';
+        }
+        
+        // Crypto selection
+        document.querySelectorAll('.crypto-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedCrypto = this.dataset.crypto;
+                selectedRate = parseFloat(this.dataset.rate);
+                updateConversion();
+            });
+        });
+        
+        // Amount input
+        document.getElementById('amount').addEventListener('input', updateConversion);
+        
+        function updateConversion() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const fee = amount * 0.01;
+            const netAmount = amount - fee;
+            const cryptoAmount = netAmount * selectedRate;
+            
+            if (amount > 0) {
+                document.getElementById('conversion-preview').style.display = 'block';
+                document.getElementById('send-amount').textContent = amount.toFixed(2) + ' R$';
+                document.getElementById('fee-amount').textContent = fee.toFixed(2) + ' R$';
+                document.getElementById('receive-amount').textContent = cryptoAmount.toFixed(8) + ' ' + selectedCrypto;
+            } else {
+                document.getElementById('conversion-preview').style.display = 'none';
+            }
+        }
+        
+        async function submitWithdrawal() {
+            const walletAddress = document.getElementById('wallet-address').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const user = Auth.getCurrentUser();
+            
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Validation
+            if (!walletAddress) {
+                errorDiv.textContent = 'Please enter a wallet address';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (!amount || amount < 10) {
+                errorDiv.textContent = 'Minimum withdrawal is 10 R$';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (amount > user.robux) {
+                errorDiv.textContent = 'Insufficient balance';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            const btn = document.getElementById('withdraw-btn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/withdraw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: user.username,
+                        crypto: selectedCrypto,
+                        amount: amount,
+                        walletAddress: walletAddress,
+                        rate: selectedRate,
+                        token: localStorage.getItem('authToken')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update balance
+                    Auth.updateRobux(user.robux - amount);
+                    updateBalance();
+                    
+                    successDiv.textContent = `Withdrawal of ${data.cryptoAmount} ${selectedCrypto} submitted! Status: ${data.status}`;
+                    successDiv.style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('wallet-address').value = '';
+                    document.getElementById('amount').value = '';
+                    document.getElementById('conversion-preview').style.display = 'none';
+                    
+                    // Refresh history
+                    loadWithdrawalHistory();
+                } else {
+                    errorDiv.textContent = data.error || 'Withdrawal failed';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Withdraw';
+        }
+        
+        async function loadWithdrawalHistory() {
+            const user = Auth.getCurrentUser();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/withdraw/history?username=${user.username}&token=${localStorage.getItem('authToken')}`);
+                const history = await response.json();
+                
+                const historyList = document.getElementById('history-list');
+                
+                if (history.length === 0) {
+                    historyList.innerHTML = '<div style="text-align: center; color: #8b9dc3; padding: 20px;">No withdrawals yet</div>';
+                    return;
+                }
+                
+                historyList.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <div class="history-crypto">
+                            <div class="crypto-icon ${item.crypto.toLowerCase()}">${item.crypto[0]}</div>
+                            <span>${item.crypto}</span>
+                        </div>
+                        <div class="history-amount">${item.cryptoAmount} ${item.crypto}</div>
+                        <div class="history-status status-${item.status.toLowerCase()}">${item.status}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load history:', err);
+            }
+        }
+        
+        updateBalance();
+        loadWithdrawalHistory();
+    </script>
+</body>
+</html>

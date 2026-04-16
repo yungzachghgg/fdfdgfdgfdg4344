@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #141b2d 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #0f1629;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .game-board {
+            background: #141b2d;
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid #1e2841;
+        }
+        h2 {
+            text-align: center;
+            color: #F9C337;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #8b9dc3;
+            margin-bottom: 30px;
+        }
+        .dice-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .dice {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #141b2d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin: 0 10px;
+            animation: diceRoll 0.5s ease-out;
+        }
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(0.8); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .range-slider {
+            margin: 40px 0;
+            padding: 0 20px;
+        }
+        .slider-container {
+            position: relative;
+            height: 60px;
+            background: linear-gradient(90deg, #38c000 0%, #38c000 50%, #cf2e2e 50%, #cf2e2e 100%);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .slider {
+            width: 100%;
+            height: 100%;
+            -webkit-appearance: none;
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 60px;
+            background: #F9C337;
+            border-radius: 5px;
+            cursor: grab;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .slider-value {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #F9C337;
+            margin: 10px 0;
+        }
+        .odds-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .odd-box {
+            text-align: center;
+            padding: 15px 30px;
+            background: #0f1629;
+            border-radius: 10px;
+            border: 1px solid #3a4558;
+        }
+        .odd-label {
+            font-size: 12px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+        }
+        .odd-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        .bet-type {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .bet-btn {
+            padding: 15px 40px;
+            border: 2px solid #3a4558;
+            background: #0f1629;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .bet-btn:hover { border-color: #F9C337; }
+        .bet-btn.active {
+            background: #F9C337;
+            color: #141b2d;
+            border-color: #F9C337;
+        }
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .bet-input {
+            background: #0f1629;
+            border: 1px solid #3a4558;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 150px;
+        }
+        .roll-btn {
+            background: linear-gradient(135deg, #F9C337 0%, #f68f21 100%);
+            color: #141b2d;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .roll-btn:hover { transform: translateY(-2px); }
+        .roll-btn:disabled {
+            background: #39416d;
+            color: #8b9dc3;
+            cursor: not-allowed;
+        }
+        .result {
+            text-align: center;
+            font-size: 24px;
+            margin-top: 20px;
+            min-height: 30px;
+        }
+        .result.win { color: #38c000; }
+        .result.lose { color: #ff6b6b; }
+        .history {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .history-item {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            background: #0f1629;
+        }
+        .history-item.win { background: #38c000; }
+        .history-item.lose { background: #cf2e2e; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <h2>🎲 Dice</h2>
+            <p class="subtitle">Set target, roll dice, win big!</p>
+            
+            <div class="dice-display">
+                <div class="dice" id="dice1">?</div>
+                <div class="dice" id="dice2">?</div>
+            </div>
+            
+            <div class="range-slider">
+                <div class="slider-value" id="target-value">50.00</div>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="range-slider" min="2" max="98" value="50" step="0.01">
+                </div>
+            </div>
+            
+            <div class="odds-display">
+                <div class="odd-box">
+                    <div class="odd-label">Roll Under</div>
+                    <div class="odd-value" id="under-odd">1.98x</div>
+                </div>
+                <div class="odd-box">
+                    <div class="odd-label">Multiplier</div>
+                    <div class="odd-value" id="multiplier">1.98x</div>
+                </div>
+                <div class="odd-box">
+                    <div class="odd-label">Win Chance</div>
+                    <div class="odd-value" id="win-chance">49%</div>
+                </div>
+            </div>
+            
+            <div class="bet-type">
+                <button class="bet-btn active" id="under-btn" onclick="setBetType('under')">UNDER</button>
+                <button class="bet-btn" id="over-btn" onclick="setBetType('over')">OVER</button>
+            </div>
+            
+            <div class="controls">
+                <input type="number" class="bet-input" id="bet-amount" value="10" min="1" placeholder="Bet">
+                <button class="roll-btn" id="roll-btn" onclick="roll()">ROLL DICE</button>
+            </div>
+            
+            <div class="result" id="result"></div>
+            <div class="history" id="history"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        const API_URL = window.location.origin;
+        let currentBetType = 'under';
+        let isRolling = false;
+        let rollHistory = [];
+        
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+        
+        const slider = document.getElementById('range-slider');
+        const targetValue = document.getElementById('target-value');
+        const underOdd = document.getElementById('under-odd');
+        const multiplier = document.getElementById('multiplier');
+        const winChance = document.getElementById('win-chance');
+        
+        slider.addEventListener('input', updateOdds);
+        
+        function updateOdds() {
+            const val = parseFloat(slider.value);
+            targetValue.textContent = val.toFixed(2);
+            
+            const underMultiplier = (98 / (val - 1)).toFixed(2);
+            const overMultiplier = (98 / (100 - val - 1)).toFixed(2);
+            
+            if (currentBetType === 'under') {
+                multiplier.textContent = underMultiplier + 'x';
+                winChance.textContent = (val - 1).toFixed(1) + '%';
+            } else {
+                multiplier.textContent = overMultiplier + 'x';
+                winChance.textContent = (100 - val - 1).toFixed(1) + '%';
+            }
+            
+            underOdd.textContent = underMultiplier + 'x';
+        }
+        
+        function setBetType(type) {
+            currentBetType = type;
+            document.getElementById('under-btn').classList.toggle('active', type === 'under');
+            document.getElementById('over-btn').classList.toggle('active', type === 'over');
+            updateOdds();
+        }
+        
+        async function roll() {
+            if (isRolling) return;
+            
+            const betAmount = parseInt(document.getElementById('bet-amount').value);
+            const target = parseFloat(slider.value);
+            const user = Auth.getCurrentUser();
+            
+            if (betAmount < 1 || betAmount > user.robux) {
+                alert('Invalid bet amount!');
+                return;
+            }
+            
+            isRolling = true;
+            document.getElementById('roll-btn').disabled = true;
+            document.getElementById('result').textContent = '';
+            
+            // Deduct bet
+            Auth.updateRobux(user.robux - betAmount);
+            updateBalance();
+            
+            // Animate dice
+            const dice1 = document.getElementById('dice1');
+            const dice2 = document.getElementById('dice2');
+            
+            let rolls = 0;
+            const rollInterval = setInterval(() => {
+                dice1.textContent = Math.floor(Math.random() * 6) + 1;
+                dice2.textContent = Math.floor(Math.random() * 6) + 1;
+                rolls++;
+                
+                if (rolls > 10) {
+                    clearInterval(rollInterval);
+                    finishRoll(betAmount, target);
+                }
+            }, 100);
+        }
+        
+        function finishRoll(betAmount, target) {
+            // Generate result
+            const die1 = Math.floor(Math.random() * 6) + 1;
+            const die2 = Math.floor(Math.random() * 6) + 1;
+            const total = die1 + die2;
+            const resultPercent = (total / 12) * 100;
+            
+            document.getElementById('dice1').textContent = die1;
+            document.getElementById('dice2').textContent = die2;
+            
+            // Calculate win
+            let win = false;
+            let multiplierVal = 0;
+            
+            if (currentBetType === 'under') {
+                win = resultPercent < target;
+                multiplierVal = 98 / (target - 1);
+            } else {
+                win = resultPercent > target;
+                multiplierVal = 98 / (100 - target - 1);
+            }
+            
+            const resultDiv = document.getElementById('result');
+            
+            if (win) {
+                const winAmount = Math.floor(betAmount * multiplierVal);
+                Auth.updateRobux(Auth.getCurrentUser().robux + winAmount);
+                resultDiv.textContent = `🎉 ${resultPercent.toFixed(2)}! You win ${winAmount} R$!`;
+                resultDiv.className = 'result win';
+                addToHistory(resultPercent.toFixed(2), true);
+            } else {
+                resultDiv.textContent = `${resultPercent.toFixed(2)}. You lose ${betAmount} R$`;
+                resultDiv.className = 'result lose';
+                addToHistory(resultPercent.toFixed(2), false);
+            }
+            
+            updateBalance();
+            isRolling = false;
+            document.getElementById('roll-btn').disabled = false;
+        }
+        
+        function addToHistory(value, win) {
+            rollHistory.unshift({ value, win });
+            if (rollHistory.length > 10) rollHistory.pop();
+            
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = rollHistory.map(h => 
+                `<div class="history-item ${h.win ? 'win' : 'lose'}">${h.value}</div>`
+            ).join('');
+        }
+        
+        updateOdds();
+        updateBalance();
+    </script>
+</body>
+</html>

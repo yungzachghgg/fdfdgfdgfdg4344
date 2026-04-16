@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crash - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .game-board {
+            background: #192040;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+            overflow: hidden;
+        }
+        .graph-container {
+            height: 400px;
+            position: relative;
+            background: linear-gradient(180deg, #11173a 0%, #192040 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .multiplier-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: #F9C337;
+            text-shadow: 0 0 20px rgba(249, 195, 55, 0.5);
+        }
+        .multiplier-display.crashed { color: #cf2e2e; }
+        .graph-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .control-panel {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-group label { color: #b2b2be; font-size: 14px; }
+        .input-group input {
+            padding: 12px;
+            background: #11173a;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .action-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .bet-btn {
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+        }
+        .cashout-btn {
+            background: linear-gradient(90deg, #38c000 0%, #2da300 100%);
+            color: white;
+        }
+        .action-btn:disabled {
+            background: #39416d;
+            color: #8d8d9f;
+            cursor: not-allowed;
+        }
+        .history {
+            display: flex;
+            gap: 10px;
+            padding: 15px 25px;
+            background: #11173a;
+            overflow-x: auto;
+        }
+        .history-item {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .history-item.win { background: rgba(56, 192, 0, 0.3); color: #38c000; }
+        .history-item.lose { background: rgba(207, 46, 46, 0.3); color: #ff6b6b; }
+        .message {
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+        }
+        .message.win { color: #38c000; }
+        .message.lose { color: #ff6b6b; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <div class="history" id="history"></div>
+            <div class="graph-container">
+                <canvas id="crash-canvas" class="graph-line"></canvas>
+                <div class="multiplier-display" id="multiplier">1.00x</div>
+            </div>
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Bet Amount (R$)</label>
+                    <input type="number" id="bet-amount" min="1" value="10">
+                </div>
+                <div class="input-group">
+                    <label>Auto Cashout (optional)</label>
+                    <input type="number" id="auto-cashout" min="1.01" step="0.01" placeholder="1.50">
+                </div>
+                <button class="action-btn bet-btn" id="bet-btn" onclick="placeBet()">Place Bet</button>
+                <button class="action-btn cashout-btn" id="cashout-btn" onclick="cashout()" disabled>Cash Out</button>
+            </div>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        let gameState = { active: false, bet: 0, multiplier: 1.0, crashed: false };
+        let animationId = null;
+        let gameHistory = [];
+        
+        const canvas = document.getElementById('crash-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!gameState.active) return;
+            
+            ctx.strokeStyle = gameState.crashed ? '#cf2e2e' : '#F9C337';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            
+            const progress = Math.min((gameState.multiplier - 1) / 9, 1);
+            const x = progress * canvas.width;
+            const y = canvas.height - (Math.pow(progress, 0.7) * canvas.height * 0.8);
+            
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function placeBet() {
+            const bet = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', 'lose');
+                return;
+            }
+            
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            gameState = { active: true, bet: bet, multiplier: 1.0, crashed: false };
+            
+            document.getElementById('bet-btn').disabled = true;
+            document.getElementById('cashout-btn').disabled = false;
+            document.getElementById('multiplier').className = 'multiplier-display';
+            showMessage('');
+            
+            // Determine crash point (house edge 1%)
+            const crashPoint = Math.max(1.01, 0.99 / Math.random());
+            
+            let startTime = Date.now();
+            const autoCashout = parseFloat(document.getElementById('auto-cashout').value);
+            
+            function update() {
+                if (!gameState.active) return;
+                
+                const elapsed = (Date.now() - startTime) / 1000;
+                gameState.multiplier = Math.pow(1.06, elapsed);
+                
+                document.getElementById('multiplier').textContent = gameState.multiplier.toFixed(2) + 'x';
+                drawGraph();
+                
+                // Auto cashout
+                if (autoCashout && gameState.multiplier >= autoCashout) {
+                    cashout();
+                    return;
+                }
+                
+                if (gameState.multiplier >= crashPoint) {
+                    crash();
+                    return;
+                }
+                
+                animationId = requestAnimationFrame(update);
+            }
+            
+            update();
+        }
+
+        function cashout() {
+            if (!gameState.active || gameState.crashed) return;
+            
+            gameState.active = false;
+            cancelAnimationFrame(animationId);
+            
+            // Get fresh user data before calculating win
+            const user = Auth.getCurrentUser();
+            const winAmount = Math.floor(gameState.bet * gameState.multiplier);
+            Auth.updateRobux(user.robux + winAmount);
+            updateBalance();
+            
+            addToHistory(gameState.multiplier, true);
+            showMessage(`Cashed out at ${gameState.multiplier.toFixed(2)}x! Won ${winAmount} R$`, 'win');
+            
+            document.getElementById('bet-btn').disabled = false;
+            document.getElementById('cashout-btn').disabled = true;
+        }
+
+        function crash() {
+            gameState.crashed = true;
+            gameState.active = false;
+            cancelAnimationFrame(animationId);
+            
+            document.getElementById('multiplier').className = 'multiplier-display crashed';
+            document.getElementById('multiplier').textContent = 'CRASHED @ ' + gameState.multiplier.toFixed(2) + 'x';
+            drawGraph();
+            
+            addToHistory(gameState.multiplier, false);
+            showMessage(`Crashed at ${gameState.multiplier.toFixed(2)}x! Lost ${gameState.bet} R$`, 'lose');
+            
+            document.getElementById('bet-btn').disabled = false;
+            document.getElementById('cashout-btn').disabled = true;
+        }
+
+        function addToHistory(multiplier, won) {
+            gameHistory.unshift({ multiplier, won });
+            if (gameHistory.length > 10) gameHistory.pop();
+            
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = gameHistory.map(h => 
+                `<div class="history-item ${h.won ? 'win' : 'lose'}">${h.multiplier.toFixed(2)}x</div>`
+            ).join('');
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        });
+
+        updateBalance();
+    </script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - LuckBlox</title>
+    <link rel="icon" href="wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .register-container {
+            background: #192040;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 2px solid #F9C337;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo img {
+            width: 150px;
+        }
+        
+        h1 {
+            color: #F9C337;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .bonus-banner {
+            background: linear-gradient(90deg, rgba(56, 192, 0, 0.2) 0%, rgba(56, 192, 0, 0.1) 100%);
+            border: 1px solid #38c000;
+            color: #38c000;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #b2b2be;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #39416d;
+            background: #11173a;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #F9C337;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(249, 195, 55, 0.4);
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .message.error {
+            background: rgba(207, 46, 46, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #cf2e2e;
+            display: block;
+        }
+        
+        .message.success {
+            background: rgba(0, 208, 130, 0.2);
+            color: #00d084;
+            border: 1px solid #00d084;
+            display: block;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #b2b2be;
+        }
+        
+        .login-link a {
+            color: #F9C337;
+            text-decoration: none;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .back-link a {
+            color: #8ed1fc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .terms {
+            font-size: 12px;
+            color: #8d8d9f;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <img src="XwOME.jpg" alt="LuckBlox" style="width: 180px;">
+        </div>
+        <h1>Create Account</h1>
+        <div class="bonus-banner">🎁 Get 100 R$ FREE on signup!</div>
+        <div id="message" class="message"></div>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username" minlength="3" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            <button type="submit">Create Account</button>
+        </form>
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+        <div class="back-link">
+            <a href="index.html">← Back to Home</a>
+        </div>
+        <div class="terms">
+            By registering, you agree to our Terms of Service
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const messageDiv = document.getElementById('message');
+            
+            if (password !== confirmPassword) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Passwords do not match';
+                return;
+            }
+            
+            if (password.length < 6) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+            
+            const result = Auth.register(username, password);
+            
+            messageDiv.className = 'message ' + (result.success ? 'success' : 'error');
+            messageDiv.textContent = result.message;
+            
+            if (result.success) {
+                setTimeout(() => {
+                    Auth.login(username, password);
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            }
+        });
+        
+        // Redirect if already logged in
+        if (Auth.isLoggedIn()) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

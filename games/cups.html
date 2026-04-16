@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cups - LuckBlox</title>
+    <link rel="icon" href="../wp-content/uploads/2026/02/cropped-Icon2-32x32.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11173a 0%, #1b1f40 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: #1b1f40;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #F9C337;
+        }
+        .logo img { height: 40px; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .balance {
+            background: rgba(249, 195, 55, 0.2);
+            border: 1px solid #F9C337;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #F9C337;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #39416d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .game-board {
+            background: #192040;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #39416d;
+            text-align: center;
+        }
+        .control-panel {
+            background: #11173a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { color: #b2b2be; font-size: 14px; }
+        .input-group input {
+            padding: 10px;
+            background: #192040;
+            border: 2px solid #39416d;
+            color: white;
+            border-radius: 5px;
+            width: 120px;
+        }
+        .bet-btn {
+            padding: 12px 30px;
+            background: linear-gradient(90deg, rgba(249, 195, 55, 1) 35%, rgba(246, 143, 33, 1) 100%);
+            color: #192040;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .bet-btn:disabled { background: #39416d; color: #8d8d9f; cursor: not-allowed; }
+        .cups-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            min-height: 150px;
+        }
+        .cup-wrapper { text-align: center; }
+        .cup {
+            width: 100px;
+            height: 120px;
+            background: linear-gradient(180deg, #ff6b6b 0%, #cf2e2e 100%);
+            border-radius: 10px 10px 40px 40px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .cup:hover:not(.revealed):not(.shuffling) { 
+            transform: translateY(-10px); 
+            box-shadow: 0 20px 40px rgba(249, 195, 55, 0.4);
+        }
+        .cup.shuffling {
+            animation: shuffle 0.5s ease-in-out infinite;
+        }
+        @keyframes shuffle {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-20px); }
+            75% { transform: translateX(20px); }
+        }
+        .cup.revealed { cursor: default; }
+        .cup.winner { background: linear-gradient(180deg, #38c000 0%, #2da300 100%); }
+        .cup.loser { background: linear-gradient(180deg, #666 0%, #444 100%); opacity: 0.5; }
+        .cup-label { margin-top: 10px; color: #b2b2be; }
+        .ball {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #F9C337, #f68f21);
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(249, 195, 55, 0.5);
+        }
+        .message {
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .message.win { background: rgba(56, 192, 0, 0.2); color: #38c000; }
+        .message.lose { background: rgba(207, 46, 46, 0.2); color: #ff6b6b; }
+        .odds { color: #8ed1fc; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="logo">
+            <img src="../XwOME.jpg" alt="LuckBlox" style="height: 40px;">
+        </a>
+        <div class="user-info">
+            <div class="balance" id="balance-display">0 R$</div>
+            <a href="../index.html" class="back-btn">← Back</a>
+            <button onclick="Auth.logout()" class="back-btn">Logout</button>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <div class="game-board">
+            <h2 style="color: #F9C337; margin-bottom: 20px;">Cups</h2>
+            <p style="color: #b2b2be; margin-bottom: 20px;">Find the ball hidden under one of the cups! 2x multiplier</p>
+            
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>Bet Amount (R$)</label>
+                    <input type="number" id="bet-amount" min="1" value="10">
+                </div>
+                <button class="bet-btn" id="start-btn" onclick="startGame()">Start Game</button>
+            </div>
+
+            <div class="cups-container" id="cups-container">
+                <div class="cup-wrapper">
+                    <div class="cup" data-index="0" onclick="selectCup(0)">
+                        <div class="ball" style="display: none;"></div>
+                    </div>
+                    <div class="cup-label">Cup 1</div>
+                </div>
+                <div class="cup-wrapper">
+                    <div class="cup" data-index="1" onclick="selectCup(1)">
+                        <div class="ball" style="display: none;"></div>
+                    </div>
+                    <div class="cup-label">Cup 2</div>
+                </div>
+            </div>
+
+            <div class="odds">50/50 Chance - 2x Payout</div>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        Auth.requireAuth();
+        
+        let gameActive = false;
+        let winningCup = 0;
+        let bet = 0;
+
+        function updateBalance() {
+            const user = Auth.getCurrentUser();
+            document.getElementById('balance-display').textContent = user.robux + ' R$';
+        }
+
+        function startGame() {
+            bet = parseInt(document.getElementById('bet-amount').value);
+            const user = Auth.getCurrentUser();
+            
+            if (bet < 1 || bet > user.robux) {
+                showMessage('Invalid bet amount', 'lose');
+                return;
+            }
+            
+            Auth.updateRobux(user.robux - bet);
+            updateBalance();
+            
+            gameActive = true;
+            winningCup = Math.floor(Math.random() * 2);
+            
+            // Hide balls and reset cups
+            document.querySelectorAll('.cup').forEach((cup, i) => {
+                cup.className = 'cup shuffling';
+                cup.querySelector('.ball').style.display = 'none';
+                cup.querySelector('.ball').style.opacity = '1';
+            });
+            
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('message').textContent = '';
+            
+            // Stop shuffling after 2 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.cup').forEach(cup => {
+                    cup.className = 'cup';
+                });
+            }, 2000);
+        }
+
+        function selectCup(index) {
+            if (!gameActive) {
+                if (document.getElementById('start-btn').disabled) return;
+                showMessage('Click "Start Game" first!', 'lose');
+                return;
+            }
+            
+            gameActive = false;
+            
+            const cups = document.querySelectorAll('.cup');
+            
+            // Reveal ball under winning cup
+            cups[winningCup].querySelector('.ball').style.display = 'block';
+            
+            cups.forEach((cup, i) => {
+                cup.classList.add('revealed');
+                if (i === winningCup) {
+                    cup.classList.add('winner');
+                } else {
+                    cup.classList.add('loser');
+                }
+            });
+            
+            if (index === winningCup) {
+                // Win: Add back bet + profit (2x total)
+                const winAmount = bet * 2;
+                const user = Auth.getCurrentUser();
+                Auth.updateRobux(user.robux + winAmount);
+                showMessage(`You found it! Won ${winAmount} R$ (2x)`, 'win');
+            } else {
+                showMessage(`Wrong cup! The ball was under Cup ${winningCup + 1}. Lost ${bet} R$`, 'lose');
+            }
+            
+            updateBalance();
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('start-btn').textContent = 'Play Again';
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+        }
+
+        updateBalance();
+    </script>
+</body>
+</html>
